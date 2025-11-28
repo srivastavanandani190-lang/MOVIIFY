@@ -11,6 +11,8 @@ export function MovieCard({ movie }: MovieCardProps) {
   const posterUrl = movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
     : '/placeholder.svg';
+    
+  const releaseYear = movie.release_date ? new Date(movie.release_date).getFullYear() : null;
 
   return (
     <Link href={`/movies/${movie.id}`}>
@@ -27,7 +29,7 @@ export function MovieCard({ movie }: MovieCardProps) {
           </div>
           <div className="p-3">
             <h3 className="font-headline text-md font-semibold truncate text-foreground">{movie.title}</h3>
-            <p className="text-sm text-muted-foreground">{new Date(movie.release_date).getFullYear()}</p>
+            {releaseYear && <p className="text-sm text-muted-foreground">{releaseYear}</p>}
           </div>
         </CardContent>
       </Card>
