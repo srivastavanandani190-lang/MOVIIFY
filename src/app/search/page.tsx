@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Search as SearchIcon, Film, ServerCrash } from 'lucide-react';
 import { MovieCard } from '@/components/movie-card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -24,7 +24,7 @@ async function searchMovies(query: string, page: number): Promise<{ results: TMD
   return res.json();
 }
 
-export default function SearchPage() {
+function SearchComponent() {
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
   
@@ -130,4 +130,12 @@ export default function SearchPage() {
       )}
     </div>
   );
+}
+
+export default function SearchPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SearchComponent />
+        </Suspense>
+    )
 }

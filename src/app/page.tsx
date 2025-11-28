@@ -1,6 +1,4 @@
-'use client';
 
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Film, PlayCircle, Search } from 'lucide-react';
 
@@ -11,23 +9,36 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PersonalizedRecommendations } from '@/components/ai/personalized-recommendations';
 import { MOVIIFYLogo } from '@/components/icons';
-import { FormEvent } from 'react';
+import type { TMDBMovie } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default function Home() {
-  const router = useRouter();
-  const heroImage = placeholderImages.placeholderImages.find(p => p.id === 'hero-background');
-  const featuredMovies = movies.slice(0, 6);
+async function getPopularMovies(): Promise<{ results: TMDBMovie[] }> {
+    const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    if (!apiKey) {
+        console.error('TMDB_API_KEY is not set');
+        return { results: [] };
+    }
+
+    const url = `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=1`;
+
+    try {
+        const res = await fetch(url, { next: { revalidate: 3600 } }); // Revalidate every hour
+        if (!res.ok) {
+            throw new Error('Failed to fetch popular movies from TMDB.');
+        }
+        return res.json();
+    } catch (error) {
+        console.error(error);
+        return { results: [] };
+    }
+}
+
+
+export default async function Home() {
+  const { results: popularMovies } = await getPopularMovies();
+  const featuredMovies = popularMovies.slice(0, 12);
   const trailers = movies.filter(m => m.trailerId).slice(0, 3);
   
-  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const query = formData.get('search') as string;
-    if (query.trim()) {
-      router.push(`/search?query=${encodeURIComponent(query)}`);
-    }
-  };
-
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -43,10 +54,10 @@ export default function Home() {
           <p className="mt-4 max-w-2xl mx-auto text-lg text-neutral-300 drop-shadow">
             Explore thousands of movies, get personalized recommendations, and find where to watch.
           </p>
-          <form onSubmit={handleSearch} className="mt-8 max-w-xl mx-auto flex gap-2">
+          <form action="/search" className="mt-8 max-w-xl mx-auto flex gap-2">
             <Input
               type="search"
-              name="search"
+              name="query"
               placeholder="Search movies by genre, title, or year..."
               className="flex-1 bg-background/80 border-border text-foreground placeholder:text-muted-foreground focus:ring-accent"
             />
@@ -67,16 +78,23 @@ export default function Home() {
             <Film className="h-8 w-8 text-accent" />
             <h2 className="font-headline text-3xl font-bold">Movie Treasures</h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
-            {featuredMovies.map((movie) => (
-              <MovieCard key={movie.id} movie={{
-                id: movie.id,
-                title: movie.title,
-                poster_path: placeholderImages.placeholderImages.find(p => p.id === movie.posterId)?.imageUrl || '',
-                release_date: movie.releaseYear.toString(),
-              }} />
-            ))}
-          </div>
+           {featuredMovies.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+              {featuredMovies.map((movie) => (
+                <MovieCard key={movie.id} movie={movie} />
+              ))}
+            </div>
+          ) : (
+             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+                {Array.from({ length: 12 }).map((_, i) => (
+                    <div key={i} className="space-y-2">
+                        <Skeleton className="aspect-[2/3] w-full" />
+                        <Skeleton className="h-5 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                    </div>
+                ))}
+            </div>
+          )}
         </section>
 
         {/* AI Recommendations */}
