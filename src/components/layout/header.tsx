@@ -35,8 +35,6 @@ const navLinks = [
   },
   { href: '/top-rated', label: 'Top Rated' },
   { href: '/new-releases', label: 'New Releases' },
-  { href: '/trailers', label: 'Trailers' },
-  { href: '/contact', label: 'Contact' },
 ];
 
 export function Header() {
