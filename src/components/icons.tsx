@@ -9,8 +9,8 @@ export function MOVIIFYLogo(props: SVGProps<SVGSVGElement>) {
     >
       <defs>
         <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style={{ stopColor: 'hsl(120, 25%, 40%)' }} />
-          <stop offset="100%" style={{ stopColor: 'hsl(0, 40%, 50%)' }} />
+          <stop offset="0%" style={{ stopColor: 'hsl(45, 100%, 50%)' }} />
+          <stop offset="100%" style={{ stopColor: 'hsl(35, 100%, 65%)' }} />
         </linearGradient>
         <filter id="glow">
           <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
