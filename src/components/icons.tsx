@@ -9,8 +9,8 @@ export function MOVIIFYLogo(props: SVGProps<SVGSVGElement>) {
     >
       <defs>
         <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style={{ stopColor: 'hsl(45, 100%, 50%)' }} />
-          <stop offset="100%" style={{ stopColor: 'hsl(35, 100%, 65%)' }} />
+          <stop offset="0%" style={{ stopColor: 'hsl(30, 96%, 61%)' }} />
+          <stop offset="100%" style={{ stopColor: 'hsl(25, 95%, 53%)' }} />
         </linearGradient>
         <filter id="glow">
           <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
@@ -31,9 +31,9 @@ export function MOVIIFYLogo(props: SVGProps<SVGSVGElement>) {
         <path d="M -12 -18 L 15 0 L -12 18 Z" fill="hsl(var(--foreground))" />
         
         {/* Star sparkles */}
-        <use href="#star-sparkle" x="-35" y="-35" width="10" height="10" className="text-amber-300 opacity-80 animate-pulse" style={{ animationDelay: '0.2s' }} />
-        <use href="#star-sparkle" x="20" y="25" width="8" height="8" className="text-amber-200 opacity-70 animate-pulse" style={{ animationDelay: '0.5s' }} />
-        <use href="#star-sparkle" x="28" y="-15" width="12" height="12" className="text-amber-400 opacity-90 animate-pulse" />
+        <use href="#star-sparkle" x="-35" y="-35" width="10" height="10" className="text-orange-300 opacity-80 animate-pulse" style={{ animationDelay: '0.2s' }} />
+        <use href="#star-sparkle" x="20" y="25" width="8" height="8" className="text-orange-200 opacity-70 animate-pulse" style={{ animationDelay: '0.5s' }} />
+        <use href="#star-sparkle" x="28" y="-15" width="12" height="12" className="text-orange-400 opacity-90 animate-pulse" />
 
         {/* Film reel holes */}
         <g fill="hsl(var(--background))">
