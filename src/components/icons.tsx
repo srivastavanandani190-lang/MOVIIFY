@@ -19,7 +19,7 @@ export function MOVIIFYLogo(props: SVGProps<SVGSVGElement>) {
         
         {/* Soft Glow Filter */}
         <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+          <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="blur" />
           <feMerge>
             <feMergeNode in="blur" />
             <feMergeNode in="SourceGraphic" />
@@ -38,27 +38,39 @@ export function MOVIIFYLogo(props: SVGProps<SVGSVGElement>) {
         <symbol id="star-sparkle" viewBox="0 0 24 24">
           <path fill="currentColor" d="M12,1L9,9L1,12L9,15L12,23L15,15L23,12L15,9L12,1Z" />
         </symbol>
+
+        <g id="film-reel-icon">
+            <circle cx="35" cy="50" r="32" fill="none" stroke="url(#metallicGradient)" strokeWidth="4" />
+            <circle cx="35" cy="50" r="12" fill="hsl(var(--background))" stroke="url(#metallicGradient)" strokeWidth="2"/>
+            
+            {/* Cutouts */}
+            <path d="M 35,24 a 26,26 0 0 1 0,52 a 22,22 0 0 0 0,-52" fill="hsl(var(--background))" />
+            <path d="M 59,35 a 26,26 0 0 1 -52,0 a 22,22 0 0 0 52,0" transform="rotate(60 35 50)" fill="hsl(var(--background))" />
+            <path d="M 59,35 a 26,26 0 0 1 -52,0 a 22,22_ 0 0 0 52,0" transform="rotate(-60 35 50)" fill="hsl(var(--background))" />
+            
+            <circle cx="35" cy="50" r="30" fill="none" stroke="hsl(var(--background))" strokeWidth="4" />
+
+            {/* Film Holes */}
+             <g fill="url(#metallicGradient)">
+                <rect x="11" y="22" width="4" height="4" rx="1" transform="rotate(-20 13 24)"/>
+                <rect x="18" y="15" width="4" height="4" rx="1" transform="rotate(-10 20 17)"/>
+                <rect x="28" y="10" width="4" height="4" rx="1" transform="rotate(0 30 12)"/>
+                <rect x="39" y="10" width="4" height="4" rx="1" transform="rotate(15 41 12)"/>
+                <rect x="50" y="15" width="4" height="4" rx="1" transform="rotate(25 52 17)"/>
+                <rect x="58" y="23" width="4" height="4" rx="1" transform="rotate(35 60 25)"/>
+
+                <rect x="11" y="72" width="4" height="4" rx="1" transform="rotate(20 13 74)"/>
+                <rect x="18" y="80" width="4" height="4" rx="1" transform="rotate(10 20 82)"/>
+                <rect x="28" y="85" width="4" height="4" rx="1" transform="rotate(0 30 87)"/>
+                <rect x="39" y="85" width="4" height="4" rx="1" transform="rotate(-15 41 87)"/>
+                <rect x="50" y-="80" width="4" height="4" rx="1" transform="rotate(-25 52 82)"/>
+                <rect x="58" y="72" width="4" height="4" rx="1" transform="rotate(-35 60 74)"/>
+             </g>
+        </g>
       </defs>
 
-      {/* Stylized Film Reel / Play Button Icon */}
-      <g transform="translate(35, 50)" filter="url(#softGlow)">
-        <circle cx="0" cy="0" r="30" fill="none" stroke="url(#metallicGradient)" strokeWidth="3" />
-        <path d="M -12 -18 L 15 0 L -12 18 Z" fill="hsl(var(--foreground))" />
-        
-        {/* Star sparkles */}
-        <use href="#star-sparkle" x="-35" y="-35" width="8" height="8" className="text-yellow-200 opacity-60 animate-pulse" style={{ animationDelay: '0.2s' }} />
-        <use href="#star-sparkle" x="28" y="-15" width="10" height="10" className="text-yellow-100 opacity-80 animate-pulse" />
-
-        {/* Film reel holes */}
-        <g fill="hsl(var(--background))">
-            <rect x="-28" y="-22" width="4" height="4" rx="1" />
-            <rect x="-28" y="-14" width="4" height="4" rx="1" />
-            <rect x="-28" y="-6" width="4" height="4" rx="1" />
-            <rect x="-28" y="2" width="4" height="4" rx="1" />
-            <rect x="-28" y="10" width="4" height="4" rx="1" />
-            <rect x="-28" y="18" width="4" height="4" rx="1" />
-        </g>
-      </g>
+      {/* Film Reel Icon */}
+      <use href="#film-reel-icon" x="0" y="0" filter="url(#softGlow)" />
       
       {/* Typography "MOVIIFY" */}
       <text 
