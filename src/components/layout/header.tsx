@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { FormEvent } from 'react';
+import { genreMap } from '@/lib/data';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -27,13 +28,10 @@ const navLinks = [
     href: '/genres', 
     label: 'Genres',
     isDropdown: true,
-    dropdownItems: [
-      { href: '/genres/action', label: 'Action' },
-      { href: '/genres/comedy', label: 'Comedy' },
-      { href: '/genres/drama', label: 'Drama' },
-      { href: '/genres/sci-fi', label: 'Sci-Fi' },
-      { href: '/genres/thriller', label: 'Thriller' },
-    ]
+    dropdownItems: Object.entries(genreMap).slice(0, 5).map(([name, id]) => ({
+      href: `/genres/${name.toLowerCase().replace(/ /g, '-')}`,
+      label: name,
+    }))
   },
   { href: '/top-rated', label: 'Top Rated' },
   { href: '/new-releases', label: 'New Releases' },
@@ -80,6 +78,9 @@ export function Header() {
                         <Link href={item.href}>{item.label}</Link>
                       </DropdownMenuItem>
                     ))}
+                     <DropdownMenuItem asChild>
+                        <Link href="/genres">View All...</Link>
+                      </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (

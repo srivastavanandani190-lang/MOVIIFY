@@ -38,6 +38,11 @@ export type TMDBMovie = {
   spoken_languages?: { english_name: string; iso_639_1: string; name: string }[];
 };
 
+export type TMDBGenre = {
+  id: number;
+  name: string;
+};
+
 export type TMDBMovieCredits = {
   cast: {
     name: string;
