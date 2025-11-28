@@ -3,6 +3,7 @@ import './globals.css';
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 import { Toaster } from '@/components/ui/toaster';
+import { ReviewsSection } from '@/components/layout/reviews-section';
 
 export const metadata: Metadata = {
   title: 'MOVIIFY - Your Ultimate Movie Guide',
@@ -26,6 +27,7 @@ export default function RootLayout({
         <main className="flex-grow">
           {children}
         </main>
+        <ReviewsSection />
         <Footer />
         <Toaster />
       </body>
