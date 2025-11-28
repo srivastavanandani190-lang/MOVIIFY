@@ -1,66 +1,56 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Calendar, Clock, Film, Languages, Mic, Star, Tv, User, Video, Youtube } from 'lucide-react';
+import { Calendar, Film, Languages, Star, Tv, Video, Youtube } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import type { TMDBMovie, TMDBMovieCredits, TMDBVideo, TMDBWatchProviders } from '@/types';
 
-async function getMovieData(id: string): Promise<{
-  movie: TMDBMovie | null;
-  credits: TMDBMovieCredits | null;
-  videos: { results: TMDBVideo[] } | null;
-  watchProviders: { results: { [country: string]: TMDBWatchProviders } } | null;
-}> {
-  const apiKey = process.env.TMDB_API_KEY;
+type MovieDetails = TMDBMovie & {
+  credits: TMDBMovieCredits;
+  videos: { results: TMDBVideo[] };
+  'watch/providers': { results: { [country: string]: TMDBWatchProviders } };
+};
+
+async function getMovieData(id: string): Promise<MovieDetails | null> {
+  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   if (!apiKey) {
     console.error('TMDB_API_KEY is not set');
-    return { movie: null, credits: null, videos: null, watchProviders: null };
+    return null;
   }
   const baseUrl = 'https://api.themoviedb.org/3';
 
-  const movieUrl = `${baseUrl}/movie/${id}?api_key=${apiKey}&language=en-US`;
-  const creditsUrl = `${baseUrl}/movie/${id}/credits?api_key=${apiKey}`;
-  const videosUrl = `${baseUrl}/movie/${id}/videos?api_key=${apiKey}`;
-  const watchProvidersUrl = `${baseUrl}/movie/${id}/watch/providers?api_key=${apiKey}`;
+  const movieUrl = `${baseUrl}/movie/${id}?api_key=${apiKey}&language=en-US&append_to_response=credits,videos,watch/providers`;
 
   try {
-    const [movieRes, creditsRes, videosRes, watchProvidersRes] = await Promise.all([
-      fetch(movieUrl),
-      fetch(creditsUrl),
-      fetch(videosUrl),
-      fetch(watchProvidersUrl),
-    ]);
+    const res = await fetch(movieUrl);
 
-    if (!movieRes.ok) return { movie: null, credits: null, videos: null, watchProviders: null };
+    if (!res.ok) return null;
 
-    const movie = await movieRes.json();
-    const credits = creditsRes.ok ? await creditsRes.json() : null;
-    const videos = videosRes.ok ? await videosRes.json() : null;
-    const watchProviders = watchProvidersRes.ok ? await watchProvidersRes.json() : null;
+    const movie = await res.json();
     
-    return { movie, credits, videos, watchProviders };
+    return movie;
   } catch (error) {
     console.error('Failed to fetch movie data from TMDB:', error);
-    return { movie: null, credits: null, videos: null, watchProviders: null };
+    return null;
   }
 }
 
 export default async function MovieDetailPage({ params }: { params: { id: string } }) {
-  const { movie, credits, videos, watchProviders } = await getMovieData(params.id);
+  const movie = await getMovieData(params.id);
 
   if (!movie) {
     notFound();
   }
 
   const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : '/placeholder.svg';
-  const director = credits?.crew.find((person) => person.job === 'Director');
-  const mainCast = credits?.cast.slice(0, 5);
-  const trailer = videos?.results.find((video) => video.type === 'Trailer' && video.site === 'YouTube');
-  const providers = watchProviders?.results?.US; // Assuming US region
+  const director = movie.credits?.crew.find((person) => person.job === 'Director');
+  const mainCast = movie.credits?.cast.slice(0, 5);
+  const trailer = movie.videos?.results.find((video) => video.type === 'Trailer' && video.site === 'YouTube');
+  const providers = movie['watch/providers']?.results?.US; // Assuming US region
 
   return (
     <div className="container py-12">
