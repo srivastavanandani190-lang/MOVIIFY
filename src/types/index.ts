@@ -28,16 +28,20 @@ export type Movie = {
   comments: Comment[];
 };
 
-export type TMDBMovie = {
+export type TMDBItem = {
   id: number;
-  title: string;
+  title?: string; // Movie title
+  name?: string; // TV show name
   overview: string;
   poster_path: string;
   backdrop_path: string;
-  release_date: string;
+  release_date?: string; // Movie release date
+  first_air_date?: string; // TV show first air date
   vote_average: number;
   genres?: { id: number; name: string }[];
   spoken_languages?: { english_name: string; iso_639_1: string; name: string }[];
+  media_type?: 'movie' | 'tv';
+  original_language: string;
 };
 
 export type TMDBGenre = {

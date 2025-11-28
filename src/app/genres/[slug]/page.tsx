@@ -1,9 +1,10 @@
+
 import { Film } from "lucide-react";
 import { MovieCard } from "@/components/movie-card";
 import { genreMap } from "@/lib/data";
-import type { TMDBMovie } from "@/types";
+import type { TMDBItem } from "@/types";
 
-async function getMoviesByGenre(genreId: number): Promise<{ results: TMDBMovie[] }> {
+async function getMoviesByGenre(genreId: number): Promise<{ results: TMDBItem[] }> {
     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
     if (!apiKey) {
         console.error('TMDB_API_KEY is not set');
@@ -17,7 +18,10 @@ async function getMoviesByGenre(genreId: number): Promise<{ results: TMDBMovie[]
         if (!res.ok) {
             throw new Error(`Failed to fetch movies for genre ID ${genreId} from TMDB.`);
         }
-        return res.json();
+        const data = await res.json();
+        return {
+            results: data.results.map((item: any) => ({ ...item, media_type: 'movie' }))
+        };
     } catch (error) {
         console.error(error);
         return { results: [] };
@@ -28,7 +32,7 @@ export default async function GenrePage({ params }: { params: { slug: string } }
     const genreName = Object.keys(genreMap).find(key => key.toLowerCase().replace(/ /g, '-') === params.slug);
     const genreId = genreName ? genreMap[genreName] : null;
 
-    let movies: TMDBMovie[] = [];
+    let movies: TMDBItem[] = [];
     if (genreId) {
         const response = await getMoviesByGenre(genreId);
         movies = response.results;

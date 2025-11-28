@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Calendar, Film, Languages, Star, Tv, Video, Youtube } from 'lucide-react';
@@ -7,9 +8,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import type { TMDBMovie, TMDBMovieCredits, TMDBVideo, TMDBWatchProviders } from '@/types';
+import type { TMDBItem, TMDBMovieCredits, TMDBVideo, TMDBWatchProviders } from '@/types';
 
-type MovieDetails = TMDBMovie & {
+type MovieDetails = TMDBItem & {
   credits: TMDBMovieCredits;
   videos: { results: TMDBVideo[] };
   'watch/providers': { results: { [country: string]: TMDBWatchProviders } };
@@ -45,6 +46,8 @@ export default async function MovieDetailPage({ params }: { params: { id: string
   if (!movie) {
     notFound();
   }
+  const title = movie.title || movie.name;
+  const releaseDate = movie.release_date || movie.first_air_date;
 
   const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : '/placeholder.svg';
   const director = movie.credits?.crew.find((person) => person.job === 'Director');
@@ -60,7 +63,7 @@ export default async function MovieDetailPage({ params }: { params: { id: string
             <div className="relative aspect-[2/3] w-full">
               <Image
                 src={posterUrl}
-                alt={`Poster for ${movie.title}`}
+                alt={`Poster for ${title}`}
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
@@ -71,9 +74,9 @@ export default async function MovieDetailPage({ params }: { params: { id: string
 
         <div className="md:col-span-2 space-y-8">
           <div>
-            <h1 className="font-headline text-4xl font-bold">{movie.title}</h1>
+            <h1 className="font-headline text-4xl font-bold">{title}</h1>
             <div className="flex items-center gap-4 mt-2 text-muted-foreground">
-              <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {new Date(movie.release_date).getFullYear()}</span>
+              {releaseDate && <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {new Date(releaseDate).getFullYear()}</span>}
               <Separator orientation="vertical" className="h-4" />
               <div className="flex items-center gap-2">
                 <Film className="h-4 w-4" />

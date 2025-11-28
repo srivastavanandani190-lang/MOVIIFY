@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useSearchParams } from 'next/navigation';
@@ -5,30 +6,35 @@ import { Suspense, useEffect, useState } from 'react';
 import { Search as SearchIcon, Film, ServerCrash } from 'lucide-react';
 import { MovieCard } from '@/components/movie-card';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { TMDBMovie } from '@/types';
+import type { TMDBItem } from '@/types';
 import { Button } from '@/components/ui/button';
 
-async function searchMovies(query: string, page: number): Promise<{ results: TMDBMovie[], total_pages: number }> {
+async function searchMovies(query: string, page: number): Promise<{ results: TMDBItem[], total_pages: number }> {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
   if (!apiKey) {
     console.error('TMDB_API_KEY is not set');
     throw new Error('TMDB API key is not configured.');
   }
 
-  const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}&page=${page}&include_adult=false`;
+  const url = `https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&page=${page}&include_adult=false`;
 
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error('Failed to fetch search results from TMDB.');
   }
-  return res.json();
+  const data = await res.json();
+  const filteredResults = data.results.filter((item: any) => (item.media_type === 'movie' || item.media_type === 'tv') && item.poster_path);
+  return {
+    ...data,
+    results: filteredResults
+  };
 }
 
 function SearchComponent() {
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
   
-  const [movies, setMovies] = useState<TMDBMovie[]>([]);
+  const [movies, setMovies] = useState<TMDBItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -78,7 +84,7 @@ function SearchComponent() {
     return (
       <div className="container py-20 text-center">
         <SearchIcon className="mx-auto h-16 w-16 text-muted-foreground" />
-        <h1 className="mt-4 font-headline text-3xl font-bold">Search for a movie</h1>
+        <h1 className="mt-4 font-headline text-3xl font-bold">Search for a movie or TV show</h1>
         <p className="mt-2 text-lg text-muted-foreground">
           Use the search bar in the header to find your next favorite film.
         </p>
@@ -110,7 +116,7 @@ function SearchComponent() {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
         {movies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} />
+          <MovieCard key={`${movie.media_type}-${movie.id}`} movie={movie} />
         ))}
         {loading && Array.from({ length: 12 }).map((_, i) => (
             <div key={i} className="space-y-2">

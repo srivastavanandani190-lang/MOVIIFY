@@ -1,8 +1,9 @@
+
 import { Sparkles } from "lucide-react";
 import { MovieCard } from "@/components/movie-card";
-import type { TMDBMovie } from "@/types";
+import type { TMDBItem } from "@/types";
 
-async function getNewReleases(): Promise<{ results: TMDBMovie[] }> {
+async function getNewReleases(): Promise<{ results: TMDBItem[] }> {
     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
     if (!apiKey) {
         console.error('TMDB_API_KEY is not set');
@@ -16,7 +17,10 @@ async function getNewReleases(): Promise<{ results: TMDBMovie[] }> {
         if (!res.ok) {
             throw new Error('Failed to fetch new releases from TMDB.');
         }
-        return res.json();
+        const data = await res.json();
+        return {
+            results: data.results.map((item: any) => ({ ...item, media_type: 'movie' }))
+        };
     } catch (error) {
         console.error(error);
         return { results: [] };
