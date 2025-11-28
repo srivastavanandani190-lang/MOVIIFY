@@ -4,47 +4,47 @@
 
 @layer base {
   :root {
-    --background: 275 55% 12%; /* Deep Purple */
-    --foreground: 197 35% 83%;
-    --card: 275 55% 16%;
-    --card-foreground: 197 35% 83%;
-    --popover: 275 55% 12%;
-    --popover-foreground: 197 35% 83%;
-    --primary: 26 88% 48%; /* Orange */
-    --primary-foreground: 26 88% 95%;
-    --secondary: 197 40% 25%;
-    --secondary-foreground: 197 40% 90%;
-    --muted: 197 40% 30%;
-    --muted-foreground: 197 20% 60%;
-    --accent: 197 50% 50%; /* Cyan */
-    --accent-foreground: 197 50% 95%;
+    --background: 216 26% 16%; /* Deep Navy */
+    --foreground: 210 15% 85%;
+    --card: 216 26% 20%;
+    --card-foreground: 210 15% 85%;
+    --popover: 216 26% 16%;
+    --popover-foreground: 210 15% 85%;
+    --primary: 2 55% 53%; /* Red */
+    --primary-foreground: 2 55% 95%;
+    --secondary: 216 26% 25%;
+    --secondary-foreground: 210 15% 90%;
+    --muted: 216 26% 30%;
+    --muted-foreground: 210 10% 60%;
+    --accent: 34 59% 74%; /* Gold */
+    --accent-foreground: 216 26% 15%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 20% 98%;
-    --border: 275 55% 20%;
-    --input: 197 40% 25%;
-    --ring: 26 88% 48%;
+    --border: 216 26% 22%;
+    --input: 216 26% 25%;
+    --ring: 2 55% 53%;
     --radius: 0.5rem;
   }
   .dark {
-    --background: 275 55% 12%; /* Deep Purple */
-    --foreground: 197 35% 83%;
-    --card: 275 55% 16%;
-    --card-foreground: 197 35% 83%;
-    --popover: 275 55% 12%;
-    --popover-foreground: 197 35% 83%;
-    --primary: 26 88% 48%; /* Orange */
-    --primary-foreground: 26 88% 95%;
-    --secondary: 197 40% 25%;
-    --secondary-foreground: 197 40% 90%;
-    --muted: 197 40% 30%;
-    --muted-foreground: 197 20% 60%;
-    --accent: 197 50% 50%; /* Cyan */
-    --accent-foreground: 197 50% 95%;
+    --background: 216 26% 16%; /* Deep Navy */
+    --foreground: 210 15% 85%;
+    --card: 216 26% 20%;
+    --card-foreground: 210 15% 85%;
+    --popover: 216 26% 16%;
+    --popover-foreground: 210 15% 85%;
+    --primary: 2 55% 53%; /* Red */
+    --primary-foreground: 2 55% 95%;
+    --secondary: 216 26% 25%;
+    --secondary-foreground: 210 15% 90%;
+    --muted: 216 26% 30%;
+    --muted-foreground: 210 10% 60%;
+    --accent: 34 59% 74%; /* Gold */
+    --accent-foreground: 216 26% 15%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 20% 98%;
-    --border: 275 55% 20%;
-    --input: 197 40% 25%;
-    --ring: 26 88% 48%;
+    --border: 216 26% 22%;
+    --input: 216 26% 25%;
+    --ring: 2 55% 53%;
   }
 }
 
