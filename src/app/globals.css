@@ -4,47 +4,47 @@
 
 @layer base {
   :root {
-    --background: 0 0% 4%; /* Black */
-    --foreground: 0 0% 95%; /* Off-white */
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 3%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 45 100% 50%; /* Gold */
-    --primary-foreground: 45 100% 10%;
-    --secondary: 0 0% 15%; /* Dark Gray */
-    --secondary-foreground: 0 0% 90%;
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 35 100% 55%; /* Brighter Gold */
-    --accent-foreground: 35 100% 10%;
+    --background: 210 10% 15%; /* Dark Slate */
+    --foreground: 210 10% 95%;
+    --card: 210 10% 20%;
+    --card-foreground: 210 10% 95%;
+    --popover: 210 10% 10%;
+    --popover-foreground: 210 10% 95%;
+    --primary: 174 72% 56%; /* Turquoise */
+    --primary-foreground: 174 72% 15%;
+    --secondary: 210 10% 25%;
+    --secondary-foreground: 210 10% 90%;
+    --muted: 210 10% 30%;
+    --muted-foreground: 210 10% 60%;
+    --accent: 16 100% 66%; /* Coral */
+    --accent-foreground: 16 100% 15%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 20% 98%;
-    --border: 0 0% 20%;
-    --input: 0 0% 15%;
-    --ring: 45 100% 50%;
+    --border: 210 10% 30%;
+    --input: 210 10% 25%;
+    --ring: 174 72% 56%;
     --radius: 0.5rem;
   }
   .dark {
-    --background: 0 0% 4%; /* Black */
-    --foreground: 0 0% 95%; /* Off-white */
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 3%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 45 100% 50%; /* Gold */
-    --primary-foreground: 45 100% 10%;
-    --secondary: 0 0% 15%; /* Dark Gray */
-    --secondary-foreground: 0 0% 90%;
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 35 100% 55%; /* Brighter Gold */
-    --accent-foreground: 35 100% 10%;
+    --background: 210 10% 15%; /* Dark Slate */
+    --foreground: 210 10% 95%;
+    --card: 210 10% 20%;
+    --card-foreground: 210 10% 95%;
+    --popover: 210 10% 10%;
+    --popover-foreground: 210 10% 95%;
+    --primary: 174 72% 56%; /* Turquoise */
+    --primary-foreground: 174 72% 15%;
+    --secondary: 210 10% 25%;
+    --secondary-foreground: 210 10% 90%;
+    --muted: 210 10% 30%;
+    --muted-foreground: 210 10% 60%;
+    --accent: 16 100% 66%; /* Coral */
+    --accent-foreground: 16 100% 15%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 20% 98%;
-    --border: 0 0% 20%;
-    --input: 0 0% 15%;
-    --ring: 45 100% 50%;
+    --border: 210 10% 30%;
+    --input: 210 10% 25%;
+    --ring: 174 72% 56%;
   }
 }
 
