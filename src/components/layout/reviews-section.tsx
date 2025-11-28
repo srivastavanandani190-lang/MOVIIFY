@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
+import Image from 'next/image';
+import placeholderImages from "@/lib/placeholder-images.json";
 
 interface Review {
   movieId: string;
@@ -80,21 +82,36 @@ export function ReviewsSection() {
     }
 
     const averageRating = reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : "N/A";
+    const reviewsBgImage = placeholderImages.placeholderImages.find(p => p.id === 'hero-background');
 
   return (
     <footer className="bg-card/50 border-t border-border/50 py-12 md:py-20">
-      <div className="container mx-auto">
-        <h2 className="font-headline text-3xl font-bold text-primary mb-2 text-center">What MOVIIFY Users Say</h2>
-        <p className="text-muted-foreground text-center mb-10">Real reviews from real movie lovers.</p>
-
-        <div className="text-center mb-10">
-          <span className="text-2xl md:text-3xl font-bold flex items-center justify-center gap-2">
-            <Star className="w-7 h-7 text-amber-400 fill-amber-400" /> 
-            {averageRating} / 5
-          </span>
-          <span className="text-muted-foreground">({reviews.length} reviews)</span>
+      <div className="relative container mx-auto text-center rounded-lg overflow-hidden p-8 md:p-12 mb-12">
+        {reviewsBgImage && (
+             <Image
+             src={reviewsBgImage.imageUrl}
+             alt="Audience in a movie theater"
+             fill
+             className="object-cover opacity-20"
+             data-ai-hint={reviewsBgImage.imageHint}
+           />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/50"></div>
+        <div className="film-grain"></div>
+        <div className="relative z-10">
+          <h2 className="font-headline text-3xl font-bold text-primary mb-2">What MOVIIFY Users Say</h2>
+          <p className="text-muted-foreground mb-6">Real reviews from real movie lovers.</p>
+           <div className="text-center mb-6">
+            <span className="text-2xl md:text-3xl font-bold flex items-center justify-center gap-2">
+              <Star className="w-7 h-7 text-amber-400 fill-amber-400" /> 
+              {averageRating} / 5
+            </span>
+            <span className="text-muted-foreground">({reviews.length} reviews)</span>
+          </div>
         </div>
-
+      </div>
+      
+      <div className="container mx-auto">
         {reviews.length > 0 && (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             {reviews.slice(0, 3).map((review, i) => (
