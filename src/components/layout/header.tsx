@@ -142,6 +142,15 @@ export function Header() {
               <Search className="h-5 w-5 text-muted-foreground" />
             </div>
           </form>
+           <div className="hidden sm:flex items-center gap-2">
+              <Button asChild variant="ghost">
+                  <Link href="/login">Login</Link>
+              </Button>
+              <Button asChild>
+                  <Link href="/signup">Sign Up</Link>
+              </Button>
+           </div>
+
           <Button variant="ghost" size="icon" className="sm:hidden">
             <Search className="h-5 w-5" />
           </Button>
