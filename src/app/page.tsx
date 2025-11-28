@@ -117,9 +117,6 @@ export default async function Home() {
           <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight drop-shadow-lg">
             Your Universe of Movies, Unlocked.
           </h1>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-neutral-300 drop-shadow">
-            Discover your next favorite film, get personalized AI recommendations, and see where it's streaming.
-          </p>
           <form action="/search" className="mt-8 max-w-xl mx-auto flex gap-2">
             <Input
               type="search"
