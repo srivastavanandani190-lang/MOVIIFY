@@ -1,3 +1,6 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Film, PlayCircle, Search } from 'lucide-react';
 
@@ -8,11 +11,22 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PersonalizedRecommendations } from '@/components/ai/personalized-recommendations';
 import { MOVIIFYLogo } from '@/components/icons';
+import { FormEvent } from 'react';
 
 export default function Home() {
+  const router = useRouter();
   const heroImage = placeholderImages.placeholderImages.find(p => p.id === 'hero-background');
   const featuredMovies = movies.slice(0, 6);
   const trailers = movies.filter(m => m.trailerId).slice(0, 3);
+  
+  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const query = formData.get('search') as string;
+    if (query.trim()) {
+      router.push(`/search?query=${encodeURIComponent(query)}`);
+    }
+  };
 
   return (
     <div className="flex flex-col">
@@ -29,9 +43,10 @@ export default function Home() {
           <p className="mt-4 max-w-2xl mx-auto text-lg text-neutral-300 drop-shadow">
             Explore thousands of movies, get personalized recommendations, and find where to watch.
           </p>
-          <div className="mt-8 max-w-xl mx-auto flex gap-2">
+          <form onSubmit={handleSearch} className="mt-8 max-w-xl mx-auto flex gap-2">
             <Input
               type="search"
+              name="search"
               placeholder="Search movies by genre, title, or year..."
               className="flex-1 bg-background/80 border-border text-foreground placeholder:text-muted-foreground focus:ring-accent"
             />
@@ -39,7 +54,7 @@ export default function Home() {
               <Search className="h-5 w-5 mr-2" />
               Search
             </Button>
-          </div>
+          </form>
         </div>
       </section>
 
@@ -54,7 +69,12 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
             {featuredMovies.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
+              <MovieCard key={movie.id} movie={{
+                id: movie.id,
+                title: movie.title,
+                poster_path: placeholderImages.placeholderImages.find(p => p.id === movie.posterId)?.imageUrl || '',
+                release_date: movie.releaseYear.toString(),
+              }} />
             ))}
           </div>
         </section>

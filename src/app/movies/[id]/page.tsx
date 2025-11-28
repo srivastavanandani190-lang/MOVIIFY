@@ -1,31 +1,66 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { Calendar, Clock, Film, Languages, Mic, Star, Tv, User, Video } from 'lucide-react';
-
-import { getMovieById, movies } from '@/lib/data';
-import placeholderImages from '@/lib/placeholder-images.json';
-import { Badge } from '@/components/ui/badge';
+import { Calendar, Clock, Film, Languages, Mic, Star, Tv, User, Video, Youtube } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import type { TMDBMovie, TMDBMovieCredits, TMDBVideo, TMDBWatchProviders } from '@/types';
 
-export async function generateStaticParams() {
-  return movies.map((movie) => ({
-    id: movie.id,
-  }));
+async function getMovieData(id: string): Promise<{
+  movie: TMDBMovie | null;
+  credits: TMDBMovieCredits | null;
+  videos: { results: TMDBVideo[] } | null;
+  watchProviders: { results: { [country: string]: TMDBWatchProviders } } | null;
+}> {
+  const apiKey = process.env.TMDB_API_KEY;
+  if (!apiKey) {
+    console.error('TMDB_API_KEY is not set');
+    return { movie: null, credits: null, videos: null, watchProviders: null };
+  }
+  const baseUrl = 'https://api.themoviedb.org/3';
+
+  const movieUrl = `${baseUrl}/movie/${id}?api_key=${apiKey}&language=en-US`;
+  const creditsUrl = `${baseUrl}/movie/${id}/credits?api_key=${apiKey}`;
+  const videosUrl = `${baseUrl}/movie/${id}/videos?api_key=${apiKey}`;
+  const watchProvidersUrl = `${baseUrl}/movie/${id}/watch/providers?api_key=${apiKey}`;
+
+  try {
+    const [movieRes, creditsRes, videosRes, watchProvidersRes] = await Promise.all([
+      fetch(movieUrl),
+      fetch(creditsUrl),
+      fetch(videosUrl),
+      fetch(watchProvidersUrl),
+    ]);
+
+    if (!movieRes.ok) return { movie: null, credits: null, videos: null, watchProviders: null };
+
+    const movie = await movieRes.json();
+    const credits = creditsRes.ok ? await creditsRes.json() : null;
+    const videos = videosRes.ok ? await videosRes.json() : null;
+    const watchProviders = watchProvidersRes.ok ? await watchProvidersRes.json() : null;
+    
+    return { movie, credits, videos, watchProviders };
+  } catch (error) {
+    console.error('Failed to fetch movie data from TMDB:', error);
+    return { movie: null, credits: null, videos: null, watchProviders: null };
+  }
 }
 
-export default function MovieDetailPage({ params }: { params: { id: string } }) {
-  const movie = getMovieById(params.id);
+export default async function MovieDetailPage({ params }: { params: { id: string } }) {
+  const { movie, credits, videos, watchProviders } = await getMovieData(params.id);
 
   if (!movie) {
     notFound();
   }
 
-  const poster = placeholderImages.placeholderImages.find(p => p.id === movie.posterId);
+  const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : '/placeholder.svg';
+  const director = credits?.crew.find((person) => person.job === 'Director');
+  const mainCast = credits?.cast.slice(0, 5);
+  const trailer = videos?.results.find((video) => video.type === 'Trailer' && video.site === 'YouTube');
+  const providers = watchProviders?.results?.US; // Assuming US region
 
   return (
     <div className="container py-12">
@@ -33,16 +68,13 @@ export default function MovieDetailPage({ params }: { params: { id: string } }) 
         <div className="md:col-span-1">
           <Card className="overflow-hidden sticky top-24">
             <div className="relative aspect-[2/3] w-full">
-              {poster && (
-                <Image
-                  src={poster.imageUrl}
-                  alt={`Poster for ${movie.title}`}
-                  fill
-                  className="object-cover"
-                  data-ai-hint={poster.imageHint}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
-                />
-              )}
+              <Image
+                src={posterUrl}
+                alt={`Poster for ${movie.title}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+              />
             </div>
           </Card>
         </div>
@@ -51,51 +83,89 @@ export default function MovieDetailPage({ params }: { params: { id: string } }) 
           <div>
             <h1 className="font-headline text-4xl font-bold">{movie.title}</h1>
             <div className="flex items-center gap-4 mt-2 text-muted-foreground">
-              <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {movie.releaseYear}</span>
+              <span className="flex items-center gap-2"><Calendar className="h-4 w-4" /> {new Date(movie.release_date).getFullYear()}</span>
               <Separator orientation="vertical" className="h-4" />
               <div className="flex items-center gap-2">
                 <Film className="h-4 w-4" />
-                {movie.genres.map((genre) => (
-                  <Badge key={genre} variant="outline">{genre}</Badge>
+                {movie.genres?.map((genre) => (
+                  <Badge key={genre.id} variant="outline">{genre.name}</Badge>
                 ))}
               </div>
             </div>
           </div>
 
-          <p className="text-lg leading-relaxed">{movie.summary}</p>
+          <p className="text-lg leading-relaxed">{movie.overview}</p>
 
           <div className="grid grid-cols-2 gap-6 text-sm">
-            <div className="space-y-4">
-              <h3 className="font-headline text-lg font-semibold flex items-center gap-2"><Video className="h-5 w-5 text-primary" /> Director</h3>
-              <p>{movie.director}</p>
-            </div>
-            <div className="space-y-4">
-              <h3 className="font-headline text-lg font-semibold flex items-center gap-2"><Star className="h-5 w-5 text-primary" /> Cast</h3>
-              <p>{movie.cast.join(', ')}</p>
-            </div>
-            <div className="space-y-4">
-              <h3 className="font-headline text-lg font-semibold flex items-center gap-2"><Languages className="h-5 w-5 text-primary" /> Languages</h3>
-              <p>{movie.languages.join(', ')}</p>
-            </div>
+            {director && (
+              <div className="space-y-4">
+                <h3 className="font-headline text-lg font-semibold flex items-center gap-2"><Video className="h-5 w-5 text-primary" /> Director</h3>
+                <p>{director.name}</p>
+              </div>
+            )}
+            {mainCast && mainCast.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="font-headline text-lg font-semibold flex items-center gap-2"><Star className="h-5 w-5 text-primary" /> Cast</h3>
+                <p>{mainCast.map(c => c.name).join(', ')}</p>
+              </div>
+            )}
+            {movie.spoken_languages && movie.spoken_languages.length > 0 && (
+                 <div className="space-y-4">
+                 <h3 className="font-headline text-lg font-semibold flex items-center gap-2"><Languages className="h-5 w-5 text-primary" /> Languages</h3>
+                 <p>{movie.spoken_languages.map(l => l.english_name).join(', ')}</p>
+               </div>
+            )}
           </div>
 
-          <div className="space-y-4">
-            <h3 className="font-headline text-lg font-semibold flex items-center gap-2"><Tv className="h-5 w-5 text-primary" /> Where to Watch</h3>
-            <div className="flex flex-wrap gap-4">
-              {movie.platforms.map((platform) => (
-                <a key={platform.name} href={platform.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-md border bg-secondary/50 hover:bg-secondary transition-colors">
-                  <span>{platform.name}</span>
-                  <Badge variant={platform.type === 'paid' ? 'default' : 'secondary'} className={platform.type === 'paid' ? 'bg-accent text-accent-foreground' : ''}>{platform.type}</Badge>
-                </a>
-              ))}
+          {trailer && (
+             <div className="space-y-4">
+                <h3 className="font-headline text-lg font-semibold flex items-center gap-2"><Youtube className="h-5 w-5 text-primary" /> Trailer</h3>
+                <div className="aspect-video">
+                  <iframe
+                    className="w-full h-full rounded-lg"
+                    src={`https://www.youtube.com/embed/${trailer.key}`}
+                    title="YouTube video player"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+             </div>
+          )}
+          
+          {providers && (providers.flatrate || providers.rent || providers.buy) && (
+            <div className="space-y-4">
+              <h3 className="font-headline text-lg font-semibold flex items-center gap-2"><Tv className="h-5 w-5 text-primary" /> Where to Watch</h3>
+              <div className="flex flex-wrap gap-4">
+                {providers.flatrate?.map((p) => (
+                  <a key={p.provider_id} href={providers.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-md border bg-secondary/50 hover:bg-secondary transition-colors">
+                    <Image src={`https://image.tmdb.org/t/p/w92${p.logo_path}`} alt={p.provider_name} width={32} height={32} className="rounded-md" />
+                    <span>{p.provider_name}</span>
+                    <Badge variant='secondary'>Stream</Badge>
+                  </a>
+                ))}
+                 {providers.rent?.map((p) => (
+                  <a key={p.provider_id} href={providers.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-md border bg-secondary/50 hover:bg-secondary transition-colors">
+                    <Image src={`https://image.tmdb.org/t/p/w92${p.logo_path}`} alt={p.provider_name} width={32} height={32} className="rounded-md" />
+                    <span>{p.provider_name}</span>
+                    <Badge variant='outline'>Rent</Badge>
+                  </a>
+                ))}
+                 {providers.buy?.map((p) => (
+                  <a key={p.provider_id} href={providers.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 p-3 rounded-md border bg-secondary/50 hover:bg-secondary transition-colors">
+                    <Image src={`https://image.tmdb.org/t/p/w92${p.logo_path}`} alt={p.provider_name} width={32} height={32} className="rounded-md" />
+                    <span>{p.provider_name}</span>
+                    <Badge variant='default' className='bg-accent text-accent-foreground'>Buy</Badge>
+                  </a>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
           
           <Separator />
           
           <div className="space-y-6">
             <h3 className="font-headline text-2xl font-bold">Comments & Reviews</h3>
-            {/* New Comment Form */}
             <Card>
               <CardContent className="p-4">
                 <div className="flex gap-4">
@@ -110,28 +180,7 @@ export default function MovieDetailPage({ params }: { params: { id: string } }) 
                 </div>
               </CardContent>
             </Card>
-
-            {/* Existing Comments */}
-            <div className="space-y-6">
-              {movie.comments.map((comment) => (
-                <div key={comment.id} className="flex gap-4">
-                  <Avatar>
-                    <AvatarImage src={comment.avatarUrl} alt={comment.author} />
-                    <AvatarFallback>{comment.author.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">{comment.author}</span>
-                      <span className="text-xs text-muted-foreground">{comment.timestamp}</span>
-                    </div>
-                    <p className="text-muted-foreground mt-1">{comment.text}</p>
-                  </div>
-                </div>
-              ))}
-               {movie.comments.length === 0 && (
-                <p className="text-muted-foreground text-center py-4">Be the first to leave a review!</p>
-              )}
-            </div>
+            <p className="text-muted-foreground text-center py-4">Comments are coming soon!</p>
           </div>
         </div>
       </div>

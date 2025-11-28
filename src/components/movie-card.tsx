@@ -1,36 +1,33 @@
 import Image from 'next/image';
 import Link from 'next/link';
-
-import type { Movie } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
-import placeholderImages from '@/lib/placeholder-images.json';
+import type { TMDBMovie } from '@/types';
 
 interface MovieCardProps {
-  movie: Movie;
+  movie: TMDBMovie;
 }
 
 export function MovieCard({ movie }: MovieCardProps) {
-  const poster = placeholderImages.placeholderImages.find(p => p.id === movie.posterId);
+  const posterUrl = movie.poster_path
+    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+    : '/placeholder.svg';
 
   return (
     <Link href={`/movies/${movie.id}`}>
       <Card className="overflow-hidden transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:shadow-primary/20 border-border bg-secondary">
         <CardContent className="p-0">
           <div className="relative aspect-[2/3] w-full">
-            {poster && (
-               <Image
-                src={poster.imageUrl}
-                alt={`Poster for ${movie.title}`}
-                fill
-                className="object-cover"
-                data-ai-hint={poster.imageHint}
-                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1200px) 25vw, 16vw"
-              />
-            )}
+            <Image
+              src={posterUrl}
+              alt={`Poster for ${movie.title}`}
+              fill
+              className="object-cover"
+              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1200px) 25vw, 16vw"
+            />
           </div>
           <div className="p-3">
             <h3 className="font-headline text-md font-semibold truncate text-foreground">{movie.title}</h3>
-            <p className="text-sm text-muted-foreground">{movie.releaseYear}</p>
+            <p className="text-sm text-muted-foreground">{new Date(movie.release_date).getFullYear()}</p>
           </div>
         </CardContent>
       </Card>

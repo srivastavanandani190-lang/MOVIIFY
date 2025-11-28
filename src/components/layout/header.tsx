@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDown, Menu, Search } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { FormEvent } from 'react';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -42,6 +43,16 @@ const navLinks = [
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const query = formData.get('search') as string;
+    if (query.trim()) {
+      router.push(`/search?query=${encodeURIComponent(query)}`);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -121,16 +132,17 @@ export function Header() {
         </Sheet>
         
         <div className="flex flex-1 items-center justify-end space-x-2">
-          <div className="relative w-full max-w-sm hidden sm:block">
+          <form onSubmit={handleSearch} className="relative w-full max-w-sm hidden sm:block">
             <Input
               type="search"
+              name="search"
               placeholder="Search movies..."
               className="pl-10"
             />
             <div className="absolute inset-y-0 left-0 flex items-center pl-3">
               <Search className="h-5 w-5 text-muted-foreground" />
             </div>
-          </div>
+          </form>
           <Button variant="ghost" size="icon" className="sm:hidden">
             <Search className="h-5 w-5" />
           </Button>
