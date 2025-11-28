@@ -2,15 +2,14 @@
 import Image from 'next/image';
 import { Film, PlayCircle, Search } from 'lucide-react';
 
-import { movies } from '@/lib/data';
-import placeholderImages from '@/lib/placeholder-images.json';
 import { MovieCard } from '@/components/movie-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PersonalizedRecommendations } from '@/components/ai/personalized-recommendations';
 import { MOVIIFYLogo } from '@/components/icons';
-import type { TMDBMovie } from '@/types';
+import type { TMDBMovie, TMDBVideo } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import Link from 'next/link';
 
 async function getPopularMovies(): Promise<{ results: TMDBMovie[] }> {
     const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
@@ -33,11 +32,65 @@ async function getPopularMovies(): Promise<{ results: TMDBMovie[] }> {
     }
 }
 
+type MovieWithTrailer = TMDBMovie & { trailer?: TMDBVideo };
+
+async function getMoviesWithTrailers(): Promise<MovieWithTrailer[]> {
+  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+  if (!apiKey) {
+    console.error('TMDB_API_KEY is not set');
+    return [];
+  }
+
+  const fetchMovies = async (url: string) => {
+    try {
+      const res = await fetch(url, { next: { revalidate: 3600 } });
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.results || [];
+    } catch (error) {
+      console.error(`Failed to fetch movies from ${url}:`, error);
+      return [];
+    }
+  };
+
+  const nowPlayingUrl = `https://api.themoviedb.org/3/movie/now_playing?api_key=${apiKey}&language=en-US&page=1`;
+  const topRatedUrl = `https://api.themoviedb.org/3/movie/top_rated?api_key=${apiKey}&language=en-US&page=1`;
+
+  const [nowPlaying, topRated] = await Promise.all([
+    fetchMovies(nowPlayingUrl),
+    fetchMovies(topRatedUrl),
+  ]);
+
+  const allMovies = [...nowPlaying, ...topRated];
+  const uniqueMovies = Array.from(new Map(allMovies.map(m => [m.id, m])).values());
+
+  const moviesWithTrailers: MovieWithTrailer[] = [];
+
+  for (const movie of uniqueMovies) {
+    if (moviesWithTrailers.length >= 3) break;
+    try {
+      const videosUrl = `https://api.themoviedb.org/3/movie/${movie.id}/videos?api_key=${apiKey}&language=en-US`;
+      const videosRes = await fetch(videosUrl);
+      if (videosRes.ok) {
+        const videosData = await videosRes.json();
+        const trailer = videosData.results.find((v: TMDBVideo) => v.type === 'Trailer' && v.site === 'YouTube');
+        if (trailer) {
+          moviesWithTrailers.push({ ...movie, trailer });
+        }
+      }
+    } catch (error) {
+      console.error(`Failed to fetch trailer for movie ID ${movie.id}:`, error);
+    }
+  }
+
+  return moviesWithTrailers;
+}
+
 
 export default async function Home() {
   const { results: popularMovies } = await getPopularMovies();
   const featuredMovies = popularMovies.slice(0, 12);
-  const trailers = movies.filter(m => m.trailerId).slice(0, 3);
+  const trailers = await getMoviesWithTrailers();
   
   return (
     <div className="flex flex-col">
@@ -110,24 +163,29 @@ export default async function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {trailers.map((movie) => {
-              const trailerImage = placeholderImages.placeholderImages.find(p => p.id === movie.trailerId);
-              return trailerImage ? (
-                <div key={movie.id} className="group relative rounded-lg overflow-hidden shadow-lg cursor-pointer">
+              const trailerImageUrl = movie.backdrop_path ? `https://image.tmdb.org/t/p/w780${movie.backdrop_path}` : '/placeholder.svg';
+              return (
+                <Link href={`/movies/${movie.id}`} key={movie.id} className="group relative rounded-lg overflow-hidden shadow-lg cursor-pointer">
                   <Image 
-                    src={trailerImage.imageUrl}
+                    src={trailerImageUrl}
                     alt={`Trailer for ${movie.title}`}
-                    width={640}
-                    height={360}
+                    width={780}
+                    height={439}
                     className="w-full object-cover transition-transform group-hover:scale-110"
-                    data-ai-hint={trailerImage.imageHint}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4">
                     <PlayCircle className="h-12 w-12 text-white/70 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all group-hover:text-white group-hover:scale-110" />
                     <h3 className="font-headline text-xl text-white font-bold">{movie.title}</h3>
                   </div>
-                </div>
-              ) : null;
+                </Link>
+              );
             })}
+             {trailers.length === 0 && Array.from({length: 3}).map((_, i) => (
+                <div key={i} className="space-y-2">
+                    <Skeleton className="aspect-video w-full" />
+                    <Skeleton className="h-6 w-3/4" />
+                </div>
+            ))}
           </div>
         </section>
 

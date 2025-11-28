@@ -1,3 +1,4 @@
+
 export type StreamingPlatform = {
   name: string;
   url: string;
@@ -32,6 +33,7 @@ export type TMDBMovie = {
   title: string;
   overview: string;
   poster_path: string;
+  backdrop_path: string;
   release_date: string;
   vote_average: number;
   genres?: { id: number; name: string }[];
@@ -49,7 +51,7 @@ export type TMDBMovieCredits = {
     character: string;
   }[];
   crew: {
-    name: string;
+    name:string;
     job: string;
   }[];
 };
