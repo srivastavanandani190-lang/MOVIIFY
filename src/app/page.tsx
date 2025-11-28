@@ -6,9 +6,8 @@ import { MovieCard } from '@/components/movie-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MOVIIFYLogo } from '@/components/icons';
-import type { TMDBItem, TMDBVideo } from '@/types';
+import type { TMDBItem } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import Link from 'next/link';
 
 async function getMixedContent(): Promise<TMDBItem[]> {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
@@ -50,59 +49,8 @@ async function getMixedContent(): Promise<TMDBItem[]> {
   return allContent.slice(0, 18);
 }
 
-
-type ItemWithTrailer = TMDBItem & { trailer?: TMDBVideo };
-
-async function getTrendingTrailers(): Promise<ItemWithTrailer[]> {
-  const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-  if (!apiKey) {
-    console.error('TMDB_API_KEY is not set');
-    return [];
-  }
-
-  const trendingUrl = `https://api.themoviedb.org/3/trending/all/day?api_key=${apiKey}`;
-  
-  let trendingItems: TMDBItem[] = [];
-  try {
-    const res = await fetch(trendingUrl, { next: { revalidate: 3600 } });
-    if (res.ok) {
-      const data = await res.json();
-      trendingItems = (data.results || []).filter(
-        (item: any) => (item.media_type === 'movie' || item.media_type === 'tv') && item.backdrop_path
-      );
-    }
-  } catch (error) {
-    console.error(`Failed to fetch trending items:`, error);
-  }
-
-  const itemsWithTrailers: ItemWithTrailer[] = [];
-
-  for (const item of trendingItems) {
-    if (itemsWithTrailers.length >= 3) break;
-    if (!item.media_type) continue;
-
-    try {
-      const videosUrl = `https://api.themoviedb.org/3/${item.media_type}/${item.id}/videos?api_key=${apiKey}&language=en-US`;
-      const videosRes = await fetch(videosUrl);
-      if (videosRes.ok) {
-        const videosData = await videosRes.json();
-        const trailer = videosData.results.find((v: TMDBVideo) => v.type === 'Trailer' && v.site === 'YouTube');
-        if (trailer) {
-          itemsWithTrailers.push({ ...item, trailer });
-        }
-      }
-    } catch (error) {
-      console.error(`Failed to fetch trailer for ${item.media_type} ID ${item.id}:`, error);
-    }
-  }
-
-  return itemsWithTrailers;
-}
-
-
 export default async function Home() {
   const featuredContent = await getMixedContent();
-  const trailers = await getTrendingTrailers();
   
   return (
     <div className="flex flex-col">
@@ -157,42 +105,6 @@ export default async function Home() {
                 ))}
             </div>
           )}
-        </section>
-        
-        {/* Latest Trailers */}
-        <section>
-           <div className="flex items-center gap-3 mb-8">
-            <PlayCircle className="h-8 w-8 text-accent" />
-            <h2 className="font-headline text-3xl font-bold">Latest Trailers</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {trailers.map((item) => {
-              const trailerImageUrl = item.backdrop_path ? `https://image.tmdb.org/t/p/w780${item.backdrop_path}` : '/placeholder.svg';
-              const title = item.title || item.name;
-              const link = `/${item.media_type === 'tv' ? 'tv' : 'movies'}/${item.id}`;
-              return (
-                <Link href={link} key={item.id} className="group relative rounded-lg overflow-hidden shadow-lg cursor-pointer">
-                  <Image 
-                    src={trailerImageUrl}
-                    alt={`Trailer for ${title}`}
-                    width={780}
-                    height={439}
-                    className="w-full object-cover transition-transform group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4">
-                    <PlayCircle className="h-12 w-12 text-white/70 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all group-hover:text-white group-hover:scale-110" />
-                    <h3 className="font-headline text-xl text-white font-bold">{title}</h3>
-                  </div>
-                </Link>
-              );
-            })}
-             {trailers.length === 0 && Array.from({length: 3}).map((_, i) => (
-                <div key={i} className="space-y-2">
-                    <Skeleton className="aspect-video w-full" />
-                    <Skeleton className="h-6 w-3/4" />
-                </div>
-            ))}
-          </div>
         </section>
 
       </main>
