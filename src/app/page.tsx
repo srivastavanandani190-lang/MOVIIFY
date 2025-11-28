@@ -5,7 +5,6 @@ import { Film, PlayCircle, Search } from 'lucide-react';
 import { MovieCard } from '@/components/movie-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { PersonalizedRecommendations } from '@/components/ai/personalized-recommendations';
 import { MOVIIFYLogo } from '@/components/icons';
 import type { TMDBItem, TMDBVideo } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -158,11 +157,6 @@ export default async function Home() {
                 ))}
             </div>
           )}
-        </section>
-
-        {/* AI Recommendations */}
-        <section>
-          <PersonalizedRecommendations />
         </section>
         
         {/* Latest Trailers */}
