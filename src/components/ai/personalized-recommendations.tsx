@@ -51,10 +51,10 @@ export function PersonalizedRecommendations() {
   }
 
   return (
-    <Card className="bg-card/50">
+    <Card className="bg-secondary border-accent/50">
       <CardHeader>
         <div className="flex items-center gap-3">
-            <Wand2 className="h-6 w-6 text-primary" />
+            <Wand2 className="h-6 w-6 text-accent" />
             <CardTitle className="font-headline text-2xl">AI-Powered Recommendations</CardTitle>
         </div>
         <CardDescription>
@@ -119,7 +119,7 @@ export function PersonalizedRecommendations() {
         )}
         {recommendation && (
             <div className="pt-4 animate-in fade-in">
-                <h3 className="font-headline text-xl font-semibold text-primary">{recommendation.movieRecommendation}</h3>
+                <h3 className="font-headline text-xl font-semibold text-accent">{recommendation.movieRecommendation}</h3>
                 <p className="text-muted-foreground mt-2">{recommendation.explanation}</p>
             </div>
         )}

@@ -14,7 +14,7 @@ export function MovieCard({ movie }: MovieCardProps) {
 
   return (
     <Link href={`/movies/${movie.id}`}>
-      <Card className="overflow-hidden transition-all hover:scale-105 hover:shadow-lg">
+      <Card className="overflow-hidden transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:shadow-primary/20 border-border bg-secondary">
         <CardContent className="p-0">
           <div className="relative aspect-[2/3] w-full">
             {poster && (
@@ -24,12 +24,12 @@ export function MovieCard({ movie }: MovieCardProps) {
                 fill
                 className="object-cover"
                 data-ai-hint={poster.imageHint}
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1200px) 25vw, 16vw"
               />
             )}
           </div>
-          <div className="p-4">
-            <h3 className="font-headline text-lg font-semibold truncate">{movie.title}</h3>
+          <div className="p-3">
+            <h3 className="font-headline text-md font-semibold truncate text-foreground">{movie.title}</h3>
             <p className="text-sm text-muted-foreground">{movie.releaseYear}</p>
           </div>
         </CardContent>

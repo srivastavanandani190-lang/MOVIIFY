@@ -7,6 +7,7 @@ import { MovieCard } from '@/components/movie-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PersonalizedRecommendations } from '@/components/ai/personalized-recommendations';
+import { MOVIIFYLogo } from '@/components/icons';
 
 export default function Home() {
   const heroImage = placeholderImages.placeholderImages.find(p => p.id === 'hero-background');
@@ -16,31 +17,25 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <section className="relative h-[60vh] min-h-[400px] w-full flex items-center justify-center text-center text-white">
-        {heroImage && (
-          <Image
-            src={heroImage.imageUrl}
-            alt="Abstract cinematic background"
-            fill
-            className="object-cover -z-10 brightness-50"
-            data-ai-hint={heroImage.imageHint}
-            priority
-          />
-        )}
-        <div className="container px-4 md:px-6">
-          <h1 className="font-headline text-4xl md:text-6xl font-bold tracking-tight drop-shadow-lg">
+      <section className="relative h-[70vh] min-h-[500px] w-full flex items-center justify-center text-center text-white overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900 via-indigo-950 to-background -z-10"></div>
+        <div className="film-grain"></div>
+
+        <div className="container px-4 md:px-6 z-10">
+          <MOVIIFYLogo className="h-24 md:h-32 w-auto mx-auto mb-8" />
+          <h1 className="font-headline text-4xl md:text-5xl font-bold tracking-tight drop-shadow-lg">
             Find Your Next Favorite Film
           </h1>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-neutral-200 drop-shadow">
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-neutral-300 drop-shadow">
             Explore thousands of movies, get personalized recommendations, and find where to watch.
           </p>
           <div className="mt-8 max-w-xl mx-auto flex gap-2">
             <Input
               type="search"
-              placeholder="Search by title, genre, actor..."
-              className="flex-1 text-black"
+              placeholder="Search movies by genre, title, or year..."
+              className="flex-1 bg-background/80 border-border text-foreground placeholder:text-muted-foreground focus:ring-accent"
             />
-            <Button type="submit" size="lg" className="bg-primary hover:bg-primary/90">
+            <Button type="submit" size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
               <Search className="h-5 w-5 mr-2" />
               Search
             </Button>
@@ -54,8 +49,8 @@ export default function Home() {
         {/* Featured Movie Treasures */}
         <section>
           <div className="flex items-center gap-3 mb-8">
-            <Film className="h-8 w-8 text-primary" />
-            <h2 className="font-headline text-3xl font-bold">Featured Movie Treasures</h2>
+            <Film className="h-8 w-8 text-accent" />
+            <h2 className="font-headline text-3xl font-bold">Movie Treasures</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
             {featuredMovies.map((movie) => (
@@ -72,7 +67,7 @@ export default function Home() {
         {/* Latest Trailers */}
         <section>
            <div className="flex items-center gap-3 mb-8">
-            <PlayCircle className="h-8 w-8 text-primary" />
+            <PlayCircle className="h-8 w-8 text-accent" />
             <h2 className="font-headline text-3xl font-bold">Latest Trailers</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -88,7 +83,7 @@ export default function Home() {
                     className="w-full object-cover transition-transform group-hover:scale-110"
                     data-ai-hint={trailerImage.imageHint}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-4">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4">
                     <PlayCircle className="h-12 w-12 text-white/70 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-all group-hover:text-white group-hover:scale-110" />
                     <h3 className="font-headline text-xl text-white font-bold">{movie.title}</h3>
                   </div>

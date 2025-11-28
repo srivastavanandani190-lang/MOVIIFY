@@ -5,7 +5,7 @@ import { Footer } from '@/components/layout/footer';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'CineScope - Your Ultimate Movie Guide',
+  title: 'MOVIIFY - Your Ultimate Movie Guide',
   description: 'Discover, search, and get personalized recommendations for movies.',
 };
 
