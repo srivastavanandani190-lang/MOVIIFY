@@ -1,3 +1,64 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-background",
+      "description": "Abstract cinematic background",
+      "imageUrl": "https://images.unsplash.com/photo-1608170825938-a8ea0305d46c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjaW5lbWElMjB0aGVhdHJlfGVufDB8fHx8MTc2NDM0NjM4M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cinema theatre"
+    },
+    {
+      "id": "movie-poster-1",
+      "description": "Movie poster for 'Stellar Odyssey'",
+      "imageUrl": "https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzcGFjZSUyMHN0YXJzfGVufDB8fHx8MTc2NDI3Mzg2Nnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "space stars"
+    },
+    {
+      "id": "movie-poster-2",
+      "description": "Movie poster for 'The Last Cipher'",
+      "imageUrl": "https://images.unsplash.com/photo-1714846201670-1c5721196c7a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxoYWNrZXIlMjBjb2RlfGVufDB8fHx8MTc2NDMyNzMxN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hacker code"
+    },
+    {
+      "id": "movie-poster-3",
+      "description": "Movie poster for 'Echoes of the Past'",
+      "imageUrl": "https://images.unsplash.com/photo-1611146479742-12b6cdacfbab?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxvbGQlMjBjaXR5fGVufDB8fHx8MTc2NDM0NjM4M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "old city"
+    },
+    {
+      "id": "movie-poster-4",
+      "description": "Movie poster for 'Crimson Peak'",
+      "imageUrl": "https://images.unsplash.com/photo-1560298379-40e8c327303c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxoYXVudGVkJTIwaG91c2V8ZW58MHx8fHwxNzY0MjU4MzM2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "haunted house"
+    },
+    {
+      "id": "movie-poster-5",
+      "description": "Movie poster for 'Neon Dreams'",
+      "imageUrl": "https://images.unsplash.com/photo-1513061379709-ef0cd1695189?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjaXR5JTIwbmlnaHR8ZW58MHx8fHwxNzY0MjMzNTg5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "city night"
+    },
+    {
+      "id": "movie-poster-6",
+      "description": "Movie poster for 'The Gilded Cage'",
+      "imageUrl": "https://images.unsplash.com/photo-1710082777338-dcb6189ae64f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx2aW50YWdlJTIwbHV4dXJ5fGVufDB8fHx8MTc2NDM0NjM4M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "vintage luxury"
+    },
+    {
+      "id": "movie-trailer-1",
+      "description": "Trailer thumbnail for 'Stellar Odyssey'",
+      "imageUrl": "https://images.unsplash.com/photo-1530253051357-e0b79ee40459?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxnYWxheHklMjBuZWJ1bGF8ZW58MHx8fHwxNzY0Mjc1MDk2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "galaxy nebula"
+    },
+    {
+      "id": "movie-trailer-2",
+      "description": "Trailer thumbnail for 'The Last Cipher'",
+      "imageUrl": "https://images.unsplash.com/photo-1691085465046-807f880ba9d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtYXRyaXglMjBjb2RlfGVufDB8fHx8MTc2NDMyNTYzNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "matrix code"
+    },
+    {
+      "id": "movie-trailer-3",
+      "description": "Trailer thumbnail for 'Echoes of the Past'",
+      "imageUrl": "https://images.unsplash.com/photo-1683665991882-b732a6c2a1c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxjb2JibGVzdG9uZSUyMHN0cmVldHxlbnwwfHx8fDE3NjQzNDIxMTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cobblestone street"
+    }
+  ]
 }
