@@ -9,8 +9,8 @@ export function MOVIIFYLogo(props: SVGProps<SVGSVGElement>) {
     >
       <defs>
         <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style={{ stopColor: 'hsl(var(--primary))', stopOpacity: 1 }} />
-          <stop offset="100%" style={{ stopColor: 'rgb(120, 50, 220)', stopOpacity: 1 }} />
+          <stop offset="0%" style={{ stopColor: 'hsl(195, 80%, 70%)' }} />
+          <stop offset="100%" style={{ stopColor: 'hsl(280, 70%, 60%)' }} />
         </linearGradient>
         <filter id="glow">
           <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
@@ -28,7 +28,7 @@ export function MOVIIFYLogo(props: SVGProps<SVGSVGElement>) {
       {/* Stylized Film Reel / Play Button Icon */}
       <g transform="translate(35, 50)" filter="url(#glow)">
         <circle cx="0" cy="0" r="30" fill="none" stroke="url(#neonGradient)" strokeWidth="4" />
-        <path d="M -12 -18 L 15 0 L -12 18 Z" fill="hsl(var(--primary-foreground))" />
+        <path d="M -12 -18 L 15 0 L -12 18 Z" fill="hsl(var(--foreground))" />
         
         {/* Star sparkles */}
         <use href="#star-sparkle" x="-35" y="-35" width="10" height="10" className="text-amber-300 opacity-80 animate-pulse" style={{ animationDelay: '0.2s' }} />
