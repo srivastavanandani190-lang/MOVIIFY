@@ -1,48 +1,47 @@
 # 🎬✨ **Moviify — Movie Discovery & Recommendation Platform**
 
-![Moviify Banner](https://i.ibb.co/6RcR2SK/movie-poster-collage.jpg)
+![Moviify Banner](https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=1350&q=80)
 
-> **Moviify** is a modern movie recommendation and discovery website that allows users to  
-> search movies, filter by genres & languages, check streaming availability, and give feedback.
+> **Moviify** is a modern movie recommendation and discovery platform.  
+> Search movies, filter by genres & languages, check OTT availability, and give feedback.
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Built with Firebase](https://img.shields.io/badge/Backend-Firebase-ffca28?logo=firebase&logoColor=black)](#)
-[![Deployed on Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](#)
+![Firebase](https://img.shields.io/badge/Backend-Firebase-ffca28?logo=firebase&logoColor=black)
+![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)
 
 ---
 
 ## ✨ Features
 
-- 🔍 Movie **Search**
-- 🎭 **Genre-based** filtering  
-- 🌐 **Language selection**
-- 🎦 **Availability info** (Paid / Free / Platform)
-- 🤖 Smart **recommendations**
-- 💬 **Feedback system**
-- 📱 Fully responsive UI
+- 🔍 **Smart movie search**
+- 🎭 **Genre & language filters**
+- 🌐 **Multi-language availability**
+- 🎦 **OTT platform availability**
+- 🤖 **Recommendations**
+- 💬 **User feedback**
+- 📱 **Responsive design**
 
 ---
 
 ## 🖼️ Moviify Preview
 
-> Replace these images with your own screenshots  
-> (recommended size: 1280×720)
+> Replace with your screenshots later if you want
 
 ### 🔹 Homepage  
-![Homepage](https://i.ibb.co/fq2pswV/movie-website-ui.jpg)
+![Homepage](https://images.unsplash.com/photo-1542204165-65bf26472b9b?auto=format&fit=crop&w=1350&q=80)
 
-### 🔹 Search & Filters  
-![Filters](https://i.ibb.co/4KX8mS0/movie-filter-ui.jpg)
+### 🔹 Search + Filters  
+![Filters](https://images.unsplash.com/photo-1583267746896-e9b9d5e3f0e1?auto=format&fit=crop&w=1350&q=80)
 
 ### 🔹 Movie Details Page  
-![Details](https://i.ibb.co/SXMcw7r/movie-detail-ui.jpg)
+![Movie Details](https://images.unsplash.com/photo-1497032205916-ac775f0649ae?auto=format&fit=crop&w=1350&q=80)
 
 ---
 
 ## 🛠️ Tech Stack
 
 - **Frontend:** HTML, CSS, JavaScript  
-- **Backend:** Firebase Auth + Firestore  
+- **Backend:** Firebase  
 - **API:** TMDB  
 - **Deployment:** Vercel  
 
