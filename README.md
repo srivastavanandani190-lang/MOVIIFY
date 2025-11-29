@@ -1,56 +1,56 @@
- # 🎬✨ **Moviify — Interactive & Animated README** ✨
+# 🎬✨ **Moviify — Movie Discovery & Recommendation Platform**
 
-![Moviify Banner](https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif)
+![Moviify Banner](https://i.ibb.co/6RcR2SK/movie-poster-collage.jpg)
 
-> **Moviify** — a beautiful, fast, and friendly movie discovery & recommendation web app.  
-Search titles, filter by genre and language, see availability (paid/free), get recommendations and leave feedback.
+> **Moviify** is a modern movie recommendation and discovery website that allows users to  
+> search movies, filter by genres & languages, check streaming availability, and give feedback.
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Built with Firebase](https://img.shields.io/badge/backend-Firebase-yellow.svg)](#)
-[![Deployed on Vercel](https://img.shields.io/badge/deploy-Vercel-black.svg)](#)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Built with Firebase](https://img.shields.io/badge/Backend-Firebase-ffca28?logo=firebase&logoColor=black)](#)
+[![Deployed on Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel)](#)
 
 ---
 
 ## ✨ Features
 
-- 🔍 Smart **movie search** (title, year)
-- 🎭 **Genre filter** & 🎧 **Language filter**
-- 🎦 **Recommendation engine**
-- 🎬 **Availability info** (Paid/Free/OTT platforms)
-- 💬 **User feedback** system
-- 📱 Fully responsive UI with smooth micro-animations
+- 🔍 Movie **Search**
+- 🎭 **Genre-based** filtering  
+- 🌐 **Language selection**
+- 🎦 **Availability info** (Paid / Free / Platform)
+- 🤖 Smart **recommendations**
+- 💬 **Feedback system**
+- 📱 Fully responsive UI
 
 ---
 
-## 🚀 Demo  
-> Replace this demo GIF with your own  
-![Moviify Demo GIF](https://media.giphy.com/media/xT9IgG50Fb7Mi0prBC/giphy.gif)
+## 🖼️ Moviify Preview
+
+> Replace these images with your own screenshots  
+> (recommended size: 1280×720)
+
+### 🔹 Homepage  
+![Homepage](https://i.ibb.co/fq2pswV/movie-website-ui.jpg)
+
+### 🔹 Search & Filters  
+![Filters](https://i.ibb.co/4KX8mS0/movie-filter-ui.jpg)
+
+### 🔹 Movie Details Page  
+![Details](https://i.ibb.co/SXMcw7r/movie-detail-ui.jpg)
 
 ---
 
 ## 🛠️ Tech Stack
 
 - **Frontend:** HTML, CSS, JavaScript  
-- **Backend:** Firebase (Auth, Firestore)
-- **API:** TMDB (Movies + OTT availability)
-- **Deployment:** Vercel
+- **Backend:** Firebase Auth + Firestore  
+- **API:** TMDB  
+- **Deployment:** Vercel  
 
 ---
 
-# 🌈 Animated Section Break  
-![Section Break](https://media.giphy.com/media/l0HlNQ03J5JxX6lva/giphy.gif)
+## ⚙️ Installation
 
----
-
-# 🎆 Interactive Feature Highlights
-
-[![Search](https://img.shields.io/badge/🔍_Instant_Search-magenta?style=for-the-badge&logo=google)](#)  
-[![Genre Filter](https://img.shields.io/badge/🎭_Genre_Filter-blueviolet?style=for-the-badge)](#)  
-[![Language Availability](https://img.shields.io/badge/🌐_Language_Options-orange?style=for-the-badge)](#)  
-[![Recommendations](https://img.shields.io/badge/🤖_AI_Recommendations-teal?style=for-the-badge)](#)  
-[![Feedback](https://img.shields.io/badge/💬_Feedback_System-green?style=for-the-badge)](#)  
-
----
-
-# ⚡ Animated Architecture Diagram
-
+```bash
+git clone https://github.com/srivastavanandani190-lang/studio.git
+cd studio
+npm install
