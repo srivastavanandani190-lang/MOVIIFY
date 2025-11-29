@@ -2,8 +2,8 @@
 
 ![Moviify Banner](https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=1350&q=80)
 
-> **Moviify** is a modern movie recommendation and discovery platform.  
-> Search movies, filter by genres & languages, check OTT availability, and give feedback.
+> **Moviify** is a modern movie recommendation and discovery platform designed to help users find movies quickly and intelligently.  
+> Explore by genre, language, popularity, and availability — all in one clean interface.
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Firebase](https://img.shields.io/badge/Backend-Firebase-ffca28?logo=firebase&logoColor=black)
@@ -11,43 +11,51 @@
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-- 🔍 **Smart movie search**
-- 🎭 **Genre & language filters**
-- 🌐 **Multi-language availability**
-- 🎦 **OTT platform availability**
-- 🤖 **Recommendations**
-- 💬 **User feedback**
-- 📱 **Responsive design**
+### 🔍 Powerful Movie Search  
+Instant search results powered by **TMDB API**, allowing users to find movies by title, year, cast keywords, or popularity.
 
----
+### 🎭 Genre & Language Filtering  
+Users can filter movies using multiple categories:
+- Action, Romance, Thriller, etc.
+- Available languages (Hindi, English, Tamil, Telugu, etc.)
 
-## 🖼️ Moviify Preview
+### 🎦 OTT Platform Availability  
+Find out where the movie is available:
+- Netflix  
+- Amazon Prime  
+- Disney+  
+- Free streaming platforms (if available)
 
-> Replace with your screenshots later if you want
+### 🤖 Smart Movie Recommendations  
+Users receive recommendations based on:
+- Previous searches  
+- Genres they explore  
+- Popular trends  
 
-### 🔹 Homepage  
-![Homepage](https://images.unsplash.com/photo-1542204165-65bf26472b9b?auto=format&fit=crop&w=1350&q=80)
+### 💬 User Feedback System  
+Users can drop ratings, reviews, and suggestions.  
+All feedback is stored in Firebase Firestore.
 
-### 🔹 Search + Filters  
-![Filters](https://images.unsplash.com/photo-1583267746896-e9b9d5e3f0e1?auto=format&fit=crop&w=1350&q=80)
-
-### 🔹 Movie Details Page  
-![Movie Details](https://images.unsplash.com/photo-1497032205916-ac775f0649ae?auto=format&fit=crop&w=1350&q=80)
+### 📱 Fully Responsive UI  
+Designed to work smoothly on:
+- Desktop  
+- Tablets  
+- Mobile  
 
 ---
 
 ## 🛠️ Tech Stack
 
 - **Frontend:** HTML, CSS, JavaScript  
-- **Backend:** Firebase  
-- **API:** TMDB  
+- **Backend:** Firebase (Authentication + Firestore)  
+- **API:** TMDB Movie Database  
 - **Deployment:** Vercel  
 
 ---
 
-## ⚙️ Installation
+## ⚙️ Installation & Setup
 
 ```bash
 git clone https://github.com/srivastavanandani190-lang/studio.git
