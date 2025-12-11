@@ -1,4 +1,4 @@
-<h1 align="center">🎬✨ Moviify — Your Smart Movie Buddy ✨🍿</h1>
+<h1 align="center"># 🎬✨ **Moviify — Movie Discovery & Recommendation Platform**</h1>
 
 <p align="center">
   <img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&pause=1200&center=true&vCenter=true&width=700&height=70&color=FF4F9A&lines=Discover+Movies+Effortlessly;AI-Based+Recommendations;Find+Where+To+Watch;Fast%2C+Smart%2C+Beautiful+UI" />
