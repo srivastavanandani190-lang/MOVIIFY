@@ -65,20 +65,4 @@ Moviify shows if a movie is available on:
 
 ---
 
-## ⚙️ **Installation & Setup**
-
-```bash
-# 🚀 Clone the Repository
-git clone https://github.com/srivastavanandani190-lang/studio.git
-
-# 📁 Navigate into the project folder
-cd studio
-
-# 📦 Install dependencies
-npm install
-
-# 🔥 Start Development Server
-npm start
-
-# 🌐 The project will run at:
-http://localhost:3000
+ 
