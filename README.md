@@ -23,32 +23,32 @@
 
 ## ✨ **Features That Make Moviify Magical**
 
-### 🔍 **⚡ Instant Movie Search**
+### 🔍⚡ Instant Movie Search**
 - Lightning-fast results using **TMDB API**
 - Search by **title, cast, year, popularity**
 
-### 🎭 **🎨 Genre + Language Filters**
+### 🎭🎨 Genre + Language Filters**
 - Action | Romance | Thriller | Horror | Anime  
 - English | Hindi | Tamil | Telugu | Korean | Japanese
 
-### 🎦 **📺 OTT Finder (Where to Watch?)**
+### 🎦📺 OTT Finder (Where to Watch?)**
 Moviify shows if a movie is available on:
 - Netflix  
 - Prime Video  
 - Disney+ Hotstar  
 - SonyLiv & more
 
-### 🤖 **🧠 Personalized Recommendations**
+### 🤖🧠 Personalized Recommendations**
 - Based on your taste  
 - Trending picks  
 - Similar movie suggestions  
 
-### 💬 **🌟 User Reviews + Ratings**
+### 💬🌟 User Reviews + Ratings**
 - Add feedback  
 - Share ratings  
 - Stored securely in **Firebase Firestore**
 
-### 📱 **📱 Responsive UI**
+### 📱📱 Responsive UI**
 - Works smoothly on all screens  
 - Clean, minimal, aesthetic interface  
 
