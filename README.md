@@ -30,9 +30,9 @@
 ---
 
 ### 🔍 **⚡ Instant Movie Search**
-<p>
+<!-- <p>
   <img src="https://img.shields.io/badge/-Super%20Fast%20Search-ff4fd1?style=for-the-badge" />
-</p>
+</p> -->
 
 - ⚡ Instant results powered by **TMDB API**  
 - 🔠 Search by **title, cast, year, popularity**  
