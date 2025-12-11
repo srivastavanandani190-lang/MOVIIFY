@@ -3,9 +3,6 @@
 <p align="center">
   <img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&pause=1200&center=true&vCenter=true&width=700&height=70&color=FF4F9A&lines=Discover+Movies+Effortlessly;AI-Based+Recommendations;Find+Where+To+Watch;Fast%2C+Smart%2C+Beautiful+UI" />
 </p>
-
----
-
 <p align="center">
   <img src="https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=1200&q=80" width="80%" style="border-radius:12px;">
 </p>
