@@ -35,7 +35,7 @@
 - 🔠 Search by **title, cast, year, popularity**  
 - 🚀 Real-time suggestions as you type  
 
----
+
 
 ### 🎭 **🎨 Genre + Language Filters**
 <p>
@@ -46,7 +46,7 @@
 - 🌍 Filter by **English, Hindi, Tamil, Telugu, Korean, Japanese**  
 - 🎛️ Multi-select supported with smooth UI animations  
 
----
+
 
 ### 🎦 **📺 OTT Finder (Where to Watch?)**
 <p>
@@ -57,7 +57,7 @@
 - 🔄 Auto-updates using platform status  
 - 🆓 Shows free streaming options when available  
 
----
+
 
 ### 🤖 **🧠 Personalized Recommendations**
 <p>
@@ -68,7 +68,7 @@
 - 📊 Learns your **favorite genres**  
 - 🌟 Curates **trending + similar** movies for you  
 
----
+
 
 ### 💬 **🌟 User Reviews + Ratings**
 <p>
@@ -79,7 +79,7 @@
 - 📝 Leave feedback for others  
 - 🔐 Saved securely in **Firebase Firestore**  
 
----
+
 
 ### 📱 **📱 Fully Responsive UI**
 <p>
