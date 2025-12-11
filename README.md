@@ -63,6 +63,6 @@ Moviify shows if a movie is available on:
 | 🎬 API | TMDB |
 | 🚀 Deployment | Vercel |
 
----
+
 
  
