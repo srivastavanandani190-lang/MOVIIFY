@@ -24,7 +24,7 @@
 ## ✨ <span align="center">**Features That Make Moviify Magical**</span>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&duration=2500&pause=1200&color=FF73C9&center=true&vCenter=true&width=700&lines=Your+Movie+Search+Just+Got+Smarter.;Discover+More+With+Less+Effort.;Fast%2C+Stylish%2C+AI-Powered." />
+  <img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&duration=2500&pause=1200&color=FF4F9A&center=true&vCenter=true&width=700&lines=Your+Movie+Search+Just+Got+Smarter.;Discover+More+With+Less+Effort.;Fast%2C+Stylish%2C+AI-Powered." />
 </p>
 
 ---
@@ -95,12 +95,6 @@
 
 ---
 
-<p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&pause=1300&color=7CF2FF&center=true&vCenter=true&width=700&lines=Simple.+Smart.+Cinematic.;Made+for+Movie+Lovers+Like+You.">
-</p>
-
----
-
 ## 🛠️ Tech Stack
 
 | Category | Technologies |
@@ -109,7 +103,10 @@
 | 🔥 Backend | Firebase Auth + Firestore |
 | 🎬 API | TMDB |
 | 🚀 Deployment | Vercel |
-
+---
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&pause=1300&color=7CF2FF&center=true&vCenter=true&width=700&lines=Simple.+Smart.+Cinematic.;Made+for+Movie+Lovers+Like+You.">
+</p>
 
 
  
