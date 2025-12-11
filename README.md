@@ -21,36 +21,83 @@
 
 ---
 
-## ✨ **Features That Make Moviify Magical**
+## ✨ <span align="center">**Features That Make Moviify Magical**</span>
 
-### 🔍⚡ Instant Movie Search**
-- Lightning-fast results using **TMDB API**
-- Search by **title, cast, year, popularity**
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=700&size=28&duration=2500&pause=1200&color=FF73C9&center=true&vCenter=true&width=700&lines=Your+Movie+Search+Just+Got+Smarter.;Discover+More+With+Less+Effort.;Fast%2C+Stylish%2C+AI-Powered." />
+</p>
 
-### 🎭🎨 Genre + Language Filters**
-- Action | Romance | Thriller | Horror | Anime  
-- English | Hindi | Tamil | Telugu | Korean | Japanese
+---
 
-### 🎦📺 OTT Finder (Where to Watch?)**
-Moviify shows if a movie is available on:
-- Netflix  
-- Prime Video  
-- Disney+ Hotstar  
-- SonyLiv & more
+### 🔍 **⚡ Instant Movie Search**
+<p>
+  <img src="https://img.shields.io/badge/-Super%20Fast%20Search-ff4fd1?style=for-the-badge" />
+</p>
 
-### 🤖🧠 Personalized Recommendations**
-- Based on your taste  
-- Trending picks  
-- Similar movie suggestions  
+- ⚡ Instant results powered by **TMDB API**  
+- 🔠 Search by **title, cast, year, popularity**  
+- 🚀 Real-time suggestions as you type  
 
-### 💬🌟 User Reviews + Ratings**
-- Add feedback  
-- Share ratings  
-- Stored securely in **Firebase Firestore**
+---
 
-### 📱📱 Responsive UI**
-- Works smoothly on all screens  
-- Clean, minimal, aesthetic interface  
+### 🎭 **🎨 Genre + Language Filters**
+<p>
+  <img src="https://img.shields.io/badge/Genres-Action%20%7C%20Romance%20%7C%20Thriller-8a2be2?style=for-the-badge" />
+</p>
+
+- 🎬 Choose from **Action, Romance, Thriller, Anime, Horror**  
+- 🌍 Filter by **English, Hindi, Tamil, Telugu, Korean, Japanese**  
+- 🎛️ Multi-select supported with smooth UI animations  
+
+---
+
+### 🎦 **📺 OTT Finder (Where to Watch?)**
+<p>
+  <img src="https://img.shields.io/badge/OTT%20Availability-Live%20Check-00d4ff?style=for-the-badge" />
+</p>
+
+- 🍿 Instantly see if movies are on **Netflix**, **Prime Video**, **Disney+**, etc.  
+- 🔄 Auto-updates using platform status  
+- 🆓 Shows free streaming options when available  
+
+---
+
+### 🤖 **🧠 Personalized Recommendations**
+<p>
+  <img src="https://img.shields.io/badge/AI%20Powered%20Suggestions-Smart!-ff9a00?style=for-the-badge" />
+</p>
+
+- 📌 Tailored to your **search history**  
+- 📊 Learns your **favorite genres**  
+- 🌟 Curates **trending + similar** movies for you  
+
+---
+
+### 💬 **🌟 User Reviews + Ratings**
+<p>
+  <img src="https://img.shields.io/badge/Feedback-Firestore%20Synced-06d6a0?style=for-the-badge" />
+</p>
+
+- ⭐ Rate any movie you watch  
+- 📝 Leave feedback for others  
+- 🔐 Saved securely in **Firebase Firestore**  
+
+---
+
+### 📱 **📱 Fully Responsive UI**
+<p>
+  <img src="https://img.shields.io/badge/Experience-Responsive%20Design-7289da?style=for-the-badge" />
+</p>
+
+- 📱 Smooth animations on **mobile**  
+- 💻 Clean layout on **desktop**  
+- 🧁 Aesthetic, soft-glow interface  
+
+---
+
+<p align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&pause=1300&color=7CF2FF&center=true&vCenter=true&width=700&lines=Simple.+Smart.+Cinematic.;Made+for+Movie+Lovers+Like+You.">
+</p>
 
 ---
 
