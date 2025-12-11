@@ -105,7 +105,7 @@
 | 🚀 Deployment | Vercel |
 ---
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&pause=1300&color=7CF2FF&center=true&vCenter=true&width=700&lines=Simple.+Smart.+Cinematic.;Made+for+Movie+Lovers+Like+You.">
+  <img src="https://readme-typing-svg.demolab.com?font=Montserrat&weight=600&size=22&pause=1300&color=FF4F9A&center=true&vCenter=true&width=700&lines=Simple.+Smart.+Cinematic.;Made+for+Movie+Lovers+Like+You.">
 </p>
 
 
