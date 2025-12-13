@@ -182,7 +182,7 @@ export function Header() {
                       <Link href="/login">Login</Link>
                   </Button>
                   <Button asChild>
-                      <Link href="/signup">Sign Up</Button>
+                      <Link href="/signup">Sign Up</Link>
                   </Button>
                 </>
               )}
@@ -196,5 +196,3 @@ export function Header() {
     </header>
   );
 }
-
-    
