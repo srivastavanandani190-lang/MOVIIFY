@@ -84,3 +84,17 @@ export type TMDBWatchProviders = {
   rent?: TMDBWatchProvider[];
   buy?: TMDBWatchProvider[];
 };
+
+export interface UserProfile {
+    displayName: string;
+    photoURL: string;
+    email: string;
+    createdAt: any;
+    updatedAt: any;
+}
+
+export interface SearchHistoryItem {
+    id: string;
+    query: string;
+    timestamp: any;
+}

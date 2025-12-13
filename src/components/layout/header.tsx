@@ -24,6 +24,7 @@ import { genreMap } from '@/lib/data';
 import { useUser, useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Skeleton } from '../ui/skeleton';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -57,8 +58,53 @@ export function Header() {
 
   const handleLogout = () => {
     signOut(auth);
-    router.push('/');
+    router.push('/login');
   };
+
+  const renderUserAuth = () => {
+    if (isUserLoading) {
+      return <Skeleton className="h-10 w-28" />;
+    }
+
+    if (user) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center gap-2">
+               <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.photoURL ?? ''} />
+                  <AvatarFallback>{user.displayName?.[0] ?? user.email?.[0].toUpperCase()}</AvatarFallback>
+                </Avatar>
+              <span className='hidden sm:inline-block truncate max-w-28'>{user.displayName || user.email}</span>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem asChild>
+                <Link href="/profile">Profile</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Logout</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+    
+    return (
+      <div className="hidden sm:flex items-center gap-2">
+        <Button asChild variant="ghost">
+            <Link href="/login">Login</Link>
+        </Button>
+        <Button asChild>
+            <Link href="/signup">Sign Up</Link>
+        </Button>
+      </div>
+    );
+  };
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -107,6 +153,7 @@ export function Header() {
           </nav>
         </div>
 
+        {/* Mobile Menu */}
         <Sheet>
           <SheetTrigger asChild>
             <Button
@@ -136,6 +183,14 @@ export function Header() {
                   {link.label}
                 </Link>
               ))}
+               <hr/>
+               {/* Mobile Auth */}
+                {!user && (
+                    <>
+                        <Link href="/login" className='text-muted-foreground transition-colors hover:text-primary'>Login</Link>
+                        <Link href="/signup" className='text-muted-foreground transition-colors hover:text-primary'>Sign Up</Link>
+                    </>
+                )}
             </div>
           </SheetContent>
         </Sheet>
@@ -152,41 +207,8 @@ export function Header() {
               <Search className="h-5 w-5 text-muted-foreground" />
             </div>
           </form>
-           <div className="hidden sm:flex items-center gap-2">
-              {!isUserLoading && user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-2">
-                       <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.photoURL ?? ''} />
-                          <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                      <span>{user.displayName || user.email}</span>
-                      <ChevronDown className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem asChild>
-                        <Link href="/profile">Profile</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="text-red-500">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Logout</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
-                <>
-                  <Button asChild variant="ghost">
-                      <Link href="/login">Login</Link>
-                  </Button>
-                  <Button asChild>
-                      <Link href="/signup">Sign Up</Link>
-                  </Button>
-                </>
-              )}
-           </div>
+          
+          {renderUserAuth()}
 
           <Button variant="ghost" size="icon" className="sm:hidden">
             <Search className="h-5 w-5" />
