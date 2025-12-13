@@ -126,22 +126,22 @@ export default function ProfilePage() {
         setIsSaving(true);
         setUploadProgress(null);
 
-        let downloadURL = profile?.photoURL || user.photoURL; // Start with existing photo URL
+        // Start with the existing photo URL. This will be overwritten if a new avatar is uploaded.
+        let photoURL = profile?.photoURL || user.photoURL || '';
 
         try {
-            // Step 1: If a new avatar is selected, upload it to Storage
+            // Step 1: If a new avatar file is selected, upload it to Storage.
             if (newAvatarFile) {
-                console.log("Uploading new avatar...");
                 const storage = getStorage();
                 const storageRef = ref(storage, `avatars/${user.uid}/${newAvatarFile.name}`);
                 const uploadTask = uploadBytesResumable(storageRef, newAvatarFile);
 
-                downloadURL = await new Promise<string>((resolve, reject) => {
+                // Await the upload and get the download URL
+                photoURL = await new Promise<string>((resolve, reject) => {
                     uploadTask.on('state_changed',
                         (snapshot) => {
                             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                             setUploadProgress(progress);
-                            console.log('Upload is ' + progress + '% done');
                         },
                         (error) => {
                             console.error("Upload failed:", error);
@@ -160,27 +160,24 @@ export default function ProfilePage() {
                 });
             }
 
-            console.log("Updating Firebase Auth and Firestore with data:", { displayName, photoURL: downloadURL });
-
             // Step 2: Update Firebase Auth profile
-            await updateProfile(user, { displayName, photoURL: downloadURL });
+            await updateProfile(user, { displayName, photoURL });
             console.log('Firebase Auth profile updated.');
 
             // Step 3: Update Firestore document
             const userDocRef = doc(firestore, 'users', user.uid);
             const updatedProfileData = {
                 displayName,
-                photoURL: downloadURL,
+                photoURL,
                 updatedAt: serverTimestamp()
             };
             
             console.log('Payload for Firestore:', updatedProfileData);
-            await setDoc(userDocRef, updatedProfileData, { merge: true });
-            console.log('Firestore document updated.');
+            setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
 
             // Step 4: Update local state to reflect changes immediately
-            setProfile(prev => prev ? { ...prev, displayName, photoURL: downloadURL! } : null);
-            setAvatarPreview(downloadURL!); // Ensure preview shows the final, permanent URL
+            setProfile(prev => prev ? { ...prev, displayName, photoURL: photoURL! } : null);
+            setAvatarPreview(photoURL!); // Ensure preview shows the final, permanent URL
             setNewAvatarFile(null); // Clear the selected file state
 
             toast({ title: 'Profile updated successfully!' });
@@ -230,28 +227,6 @@ export default function ProfilePage() {
     
     return (
         <div className="container py-12">
-            <div className="flex flex-col items-center mb-8">
-                 <div className="relative group mb-4">
-                    <Avatar className="h-36 w-36 border-4 border-accent shadow-lg">
-                        <AvatarImage src={avatarPreview || undefined} alt={displayName} />
-                        <AvatarFallback className="text-5xl">{displayName?.[0].toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <Button 
-                        onClick={() => fileInputRef.current?.click()}
-                        variant="outline"
-                        size="icon"
-                        className="absolute bottom-1 right-1 h-10 w-10 rounded-full bg-background/80 group-hover:bg-accent"
-                        aria-label="Upload new avatar"
-                    >
-                        <Upload className="h-5 w-5" />
-                    </Button>
-                    <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/png, image/jpeg, image/webp" className="hidden" />
-                </div>
-                 <h1 className="font-headline text-4xl font-bold">{displayName}</h1>
-                 <p className="text-muted-foreground">{user?.email}</p>
-            </div>
-
-
             <div className="grid md:grid-cols-3 gap-8">
                 <div className="md:col-span-1 space-y-8">
                      <Card>
@@ -260,11 +235,33 @@ export default function ProfilePage() {
                             <CardDescription>Update your display name and avatar.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
+                            <div className="flex flex-col items-center space-y-4">
+                                <div className="relative group">
+                                    <Avatar className="h-36 w-36 border-4 border-accent shadow-lg">
+                                        <AvatarImage src={avatarPreview || undefined} alt={displayName} />
+                                        <AvatarFallback className="text-5xl">{displayName?.[0].toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                    <Button 
+                                        onClick={() => fileInputRef.current?.click()}
+                                        variant="outline"
+                                        size="icon"
+                                        className="absolute bottom-1 right-1 h-10 w-10 rounded-full bg-background/80 group-hover:bg-accent"
+                                        aria-label="Upload new avatar"
+                                    >
+                                        <Upload className="h-5 w-5" />
+                                    </Button>
+                                    <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/png, image/jpeg, image/webp" className="hidden" />
+                                </div>
+                                <p className="text-sm text-muted-foreground">{user?.email}</p>
+                            </div>
+
                             {uploadProgress !== null && <Progress value={uploadProgress} className="w-full h-2" />}
+                            
                             <div className="space-y-2">
                                 <Label htmlFor="displayName">Display Name</Label>
                                 <Input id="displayName" type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
                             </div>
+                            
                             <Button onClick={handleSaveProfile} disabled={isSaving} className="w-full">
                                 {isSaving ? (uploadProgress !== null ? `Uploading: ${Math.round(uploadProgress)}%` : 'Saving...') : 'Save Changes'}
                             </Button>
