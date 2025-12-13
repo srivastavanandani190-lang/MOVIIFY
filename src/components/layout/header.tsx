@@ -161,12 +161,14 @@ export function Header() {
                           <AvatarImage src={user.photoURL ?? ''} />
                           <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
                         </Avatar>
-                      <span>{user.email}</span>
+                      <span>{user.displayName || user.email}</span>
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem disabled>Profile</DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                        <Link href="/profile">Profile</Link>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="text-red-500">
                       <LogOut className="mr-2 h-4 w-4" />
@@ -180,7 +182,7 @@ export function Header() {
                       <Link href="/login">Login</Link>
                   </Button>
                   <Button asChild>
-                      <Link href="/signup">Sign Up</Link>
+                      <Link href="/signup">Sign Up</Button>
                   </Button>
                 </>
               )}
@@ -194,3 +196,5 @@ export function Header() {
     </header>
   );
 }
+
+    

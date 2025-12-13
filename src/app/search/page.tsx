@@ -8,6 +8,8 @@ import { MovieCard } from '@/components/movie-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { TMDBItem } from '@/types';
 import { Button } from '@/components/ui/button';
+import { useUser, useFirestore } from '@/firebase';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 async function searchMovies(query: string, page: number): Promise<{ results: TMDBItem[], total_pages: number }> {
   const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
@@ -31,6 +33,8 @@ async function searchMovies(query: string, page: number): Promise<{ results: TMD
 }
 
 function SearchComponent() {
+  const { user } = useUser();
+  const firestore = useFirestore();
   const searchParams = useSearchParams();
   const query = searchParams.get('query');
   
@@ -51,6 +55,14 @@ function SearchComponent() {
         .then(data => {
           setMovies(data.results);
           setTotalPages(data.total_pages);
+          if (user && firestore) {
+            const historyRef = collection(firestore, `users/${user.uid}/searchHistory`);
+            addDoc(historyRef, {
+              query,
+              timestamp: serverTimestamp(),
+              userId: user.uid,
+            });
+          }
         })
         .catch(err => {
           setError(err.message || 'An unexpected error occurred.');
@@ -61,7 +73,7 @@ function SearchComponent() {
     } else {
       setLoading(false);
     }
-  }, [query]);
+  }, [query, user, firestore]);
 
   const loadMore = () => {
     if (query && page < totalPages) {
@@ -145,3 +157,5 @@ export default function SearchPage() {
         </Suspense>
     )
 }
+
+    

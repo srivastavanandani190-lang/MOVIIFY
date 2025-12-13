@@ -15,21 +15,29 @@
           "description": "Email address of the user.",
           "format": "email"
         },
-        "username": {
+        "displayName": {
           "type": "string",
-          "description": "Username chosen by the user."
+          "description": "The user's display name."
         },
-        "joinDate": {
-          "type": "string",
-          "description": "Date and time when the user joined CineScope.",
-          "format": "date-time"
+        "photoURL": {
+            "type": "string",
+            "description": "URL of the user's profile picture.",
+            "format": "uri"
+        },
+        "createdAt": {
+            "type": "string",
+            "description": "The timestamp when the user profile was created.",
+            "format": "date-time"
+        },
+        "updatedAt": {
+            "type": "string",
+            "description": "The timestamp when the user profile was last updated.",
+            "format": "date-time"
         }
       },
       "required": [
         "id",
-        "email",
-        "username",
-        "joinDate"
+        "email"
       ]
     },
     "Movie": {
@@ -78,6 +86,35 @@
         "releaseYear",
         "summary",
         "posterUrl"
+      ]
+    },
+    "SearchHistory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SearchHistory",
+      "type": "object",
+      "description": "Represents a single search event by a user.",
+      "properties": {
+        "id": {
+            "type": "string"
+        },
+        "query": {
+          "type": "string",
+          "description": "The search query entered by the user."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of when the search was made.",
+          "format": "date-time"
+        },
+        "userId": {
+            "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "query",
+        "timestamp",
+        "userId"
       ]
     },
     "Genre": {
@@ -248,6 +285,26 @@
         }
       },
       {
+        "path": "/users/{userId}/searchHistory/{historyId}",
+        "definition": {
+          "entityName": "SearchHistory",
+          "schema": {
+            "$ref": "#/backend/entities/SearchHistory"
+          },
+          "description": "Stores a user's search history. Access is restricted to the owning user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            },
+            {
+              "name": "historyId",
+              "description": "The unique identifier for the search history entry."
+            }
+          ]
+        }
+      },
+      {
         "path": "/movies/{movieId}",
         "definition": {
           "entityName": "Movie",
@@ -348,6 +405,7 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to ensure security, scalability, and ease of debugging, adhering to the principles of Authorization Independence, Clarity of Intent, DBAC, and QAPs. User data is stored in a path-based structure under `/users/{userId}` providing ownership-based security. Movies, Genres and Platforms are stored in root collections, as their access isn't strictly user-dependent. Comments are stored as subcollections under each movie to allow for efficient retrieval and management. MoviePlatform documents represent the many-to-many relationship between Movies and Platforms.\n\nAuthorization Independence is achieved by avoiding `get()` calls in security rules. The `comments` subcollection denormalizes the `userId` in each comment, allowing rules to validate comment ownership without fetching user data.\n\nQAPs are supported through structural segregation and the membership model. Access to user profiles is restricted to the owning user via path-based rules. Collaborative data, like comments, does not utilize a membership model as no collaborative authoring is provided for."
+    "reasoning": "The Firestore structure is designed to ensure security, scalability, and ease of debugging, adhering to the principles of Authorization Independence, Clarity of Intent, DBAC, and QAPs. User data is stored in a path-based structure under `/users/{userId}` providing ownership-based security. A user's search history is stored in a subcollection under their user document. Movies, Genres and Platforms are stored in root collections, as their access isn't strictly user-dependent. Comments are stored as subcollections under each movie to allow for efficient retrieval and management. MoviePlatform documents represent the many-to-many relationship between Movies and Platforms.\n\nAuthorization Independence is achieved by avoiding `get()` calls in security rules. The `comments` subcollection denormalizes the `userId` in each comment, allowing rules to validate comment ownership without fetching user data.\n\nQAPs are supported through structural segregation and the membership model. Access to user profiles and their subcollections is restricted to the owning user via path-based rules. Collaborative data, like comments, does not utilize a membership model as no collaborative authoring is provided for."
   }
 }
+    

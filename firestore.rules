@@ -7,6 +7,7 @@
  *
  * Data Structure:
  * - /users/{userId}: Contains private user profile data, accessible only by the owner.
+ * - /users/{userId}/searchHistory/{historyId}: Private user search history.
  * - /movies/{movieId}: Public movie catalog data.
  * - /genres/{genreId}: Public movie genre data.
  * - /platforms/{platformId}: Public streaming platform data.
@@ -15,13 +16,13 @@
  * - /recommendations/{recommendationId}: Admin-managed recommendations, currently locked down.
  *
  * Key Security Decisions:
- * - User Isolation: A user can only access their own document within the `/users` collection.
+ * - User Isolation: A user can only access their own document within the `/users` collection and its subcollections.
  *   Listing all users is strictly forbidden.
  * - Public Read, Admin Write: Core catalog data (movies, genres, etc.) is publicly
  *   readable by all clients. However, write operations are disabled by default pending
  *   the implementation of an admin-only role system.
  * - Content Ownership: A user who creates a comment is the sole owner and is the only
- *   one who can update or delete it.
+ *   one who can update or delete it. The same applies to their search history.
  * - Secure by Default: Collections intended for admin-only use, like `/recommendations`,
  *   are completely locked down until a proper admin verification function is implemented.
  *
@@ -55,7 +56,7 @@ service cloud.firestore {
     }
 
     /**
-     * @description Rules for a user's own profile document.
+     * @description Rules for a user's own profile document and subcollections.
      * @path /users/{userId}
      * @allow (create) A new user can create their own profile document.
      * @deny (get) A user cannot read another user's profile.
@@ -67,6 +68,15 @@ service cloud.firestore {
       allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
+      
+      /**
+       * @description Rules for a user's search history.
+       * @path /users/{userId}/searchHistory/{historyId}
+       * @allow (read, write) Only the owner of the profile can manage their search history.
+       */
+      match /searchHistory/{historyId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     /**
@@ -158,3 +168,4 @@ service cloud.firestore {
     }
   }
 }
+    
