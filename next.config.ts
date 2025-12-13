@@ -2,6 +2,11 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
+  experimental: {
+    // This is the setting that needs to be added.
+    // It allows requests from the specified origin in development mode.
+    allowedDevOrigins: ["https://6000-firebase-studio-1764345901744.cluster-zumahodzirciuujpqvsniawo3o.cloudworkstations.dev"]
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
