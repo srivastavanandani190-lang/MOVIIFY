@@ -168,12 +168,11 @@ export default function ProfilePage() {
         }
 
         setIsSaving(true);
-        setUploadProgress(0); // Reset progress
+        setUploadProgress(0);
         
         try {
             let finalPhotoURL = profile?.photoURL || user.photoURL || '';
 
-            // Scenario 1: New avatar is selected
             if (newAvatarFile) {
                 finalPhotoURL = await uploadAvatar(newAvatarFile, user.uid, setUploadProgress);
                 
@@ -189,9 +188,8 @@ export default function ProfilePage() {
                 setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
 
                 setProfile(prev => prev ? { ...prev, displayName, photoURL: finalPhotoURL! } : null);
+                setAvatarPreview(finalPhotoURL);
                 setNewAvatarFile(null);
-
-            // Scenario 2: Only display name is being changed
             } else if (displayName !== (profile?.displayName || user.displayName)) {
                  await updateProfile(user, { displayName });
                  const userDocRef = doc(firestore, 'users', user.uid);
@@ -210,7 +208,7 @@ export default function ProfilePage() {
             toast({ variant: 'destructive', title: 'Error updating profile', description: error.message || "An unexpected error occurred." });
         } finally {
             setIsSaving(false);
-            setUploadProgress(null); // Hide progress bar
+            setUploadProgress(null);
         }
     };
 
@@ -281,8 +279,8 @@ export default function ProfilePage() {
 
                             {uploadProgress !== null && (
                                 <div className="w-full space-y-1 text-center">
-                                    <Progress value={uploadProgress} className="h-2" />
-                                    <p className="text-xs text-primary">
+                                    <Progress value={uploadProgress} className="h-2 bg-green-500/20 [&>div]:bg-green-500" />
+                                    <p className="text-xs text-red-500">
                                         {uploadProgress < 100 ? `Uploading: ${uploadProgress}%` : 'Upload complete!'}
                                     </p>
                                 </div>
@@ -293,7 +291,7 @@ export default function ProfilePage() {
                                 <Input id="displayName" type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
                             </div>
                             
-                            <Button onClick={handleSaveProfile} disabled={isSaving} className="w-full">
+                            <Button onClick={handleSaveProfile} disabled={isSaving} className="w-full bg-red-600 hover:bg-red-700 text-white">
                                 {isSaving ? (uploadProgress !== null && uploadProgress < 100 ? `Uploading: ${uploadProgress}%` : 'Saving...') : 'Save Changes'}
                             </Button>
                         </CardContent>
