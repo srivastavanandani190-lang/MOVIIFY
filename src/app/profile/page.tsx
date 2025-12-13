@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { updateProfile } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp, collection, deleteDoc, writeBatch, query, orderBy } from 'firebase/firestore';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL, UploadTask } from 'firebase/storage';
 import { User, Trash2, Upload, History, X, AlertTriangle, Image as ImageIcon } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -31,6 +31,39 @@ interface SearchHistoryItem {
     query: string;
     timestamp: any;
 }
+
+// Helper function to handle the file upload and progress tracking
+const uploadAvatar = (
+    file: File, 
+    userId: string, 
+    setProgress: (progress: number) => void
+): Promise<string> => {
+    const storage = getStorage();
+    const storageRef = ref(storage, `avatars/${userId}/${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    return new Promise<string>((resolve, reject) => {
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setProgress(progress);
+            },
+            (error) => {
+                console.error("Upload failed:", error);
+                reject(error);
+            },
+            async () => {
+                try {
+                    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadURL);
+                } catch (error) {
+                    reject(error);
+                }
+            }
+        );
+    });
+};
+
 
 export default function ProfilePage() {
     const { user, isUserLoading } = useUser();
@@ -131,39 +164,12 @@ export default function ProfilePage() {
         try {
             let photoURL = profile?.photoURL || user.photoURL || '';
 
-            // Step 1: If a new avatar file is selected, upload it to Storage.
             if (newAvatarFile) {
-                const storage = getStorage();
-                const storageRef = ref(storage, `avatars/${user.uid}/${newAvatarFile.name}`);
-                const uploadTask = uploadBytesResumable(storageRef, newAvatarFile);
-
-                // Await the upload and get the download URL via a Promise
-                photoURL = await new Promise<string>((resolve, reject) => {
-                    uploadTask.on('state_changed',
-                        (snapshot) => {
-                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            setUploadProgress(progress);
-                        },
-                        (error) => {
-                            console.error("Upload failed:", error);
-                            reject(error);
-                        },
-                        async () => {
-                            try {
-                                const url = await getDownloadURL(uploadTask.snapshot.ref);
-                                resolve(url);
-                            } catch (error) {
-                                reject(error);
-                            }
-                        }
-                    );
-                });
+                photoURL = await uploadAvatar(newAvatarFile, user.uid, setUploadProgress);
             }
 
-            // Step 2: Update Firebase Auth profile
             await updateProfile(user, { displayName, photoURL });
-
-            // Step 3: Update Firestore document
+            
             const userDocRef = doc(firestore, 'users', user.uid);
             const updatedProfileData = {
                 displayName,
@@ -171,13 +177,11 @@ export default function ProfilePage() {
                 updatedAt: serverTimestamp()
             };
             
-            // Use the non-blocking function to handle potential permission errors gracefully
             setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
 
-            // Step 4: Update local state to reflect changes immediately
             setProfile(prev => prev ? { ...prev, displayName, photoURL: photoURL! } : null);
-            setAvatarPreview(photoURL!); // Ensure preview shows the final, permanent URL
-            setNewAvatarFile(null); // Clear the selected file state
+            setAvatarPreview(photoURL!);
+            setNewAvatarFile(null);
 
             toast({ title: 'Profile updated successfully!' });
 
