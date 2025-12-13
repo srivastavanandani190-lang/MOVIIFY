@@ -173,30 +173,35 @@ export default function ProfilePage() {
         try {
             let finalPhotoURL = profile?.photoURL || user.photoURL || '';
 
-            // Step 1: Upload new avatar if one is selected
+            // Scenario 1: New avatar is selected
             if (newAvatarFile) {
                 finalPhotoURL = await uploadAvatar(newAvatarFile, user.uid, setUploadProgress);
+                
+                await updateProfile(user, { displayName, photoURL: finalPhotoURL });
+                
+                const userDocRef = doc(firestore, 'users', user.uid);
+                const updatedProfileData = {
+                    displayName,
+                    photoURL: finalPhotoURL,
+                    updatedAt: serverTimestamp()
+                };
+                
+                setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
+
+                setProfile(prev => prev ? { ...prev, displayName, photoURL: finalPhotoURL! } : null);
+                setNewAvatarFile(null);
+
+            // Scenario 2: Only display name is being changed
+            } else if (displayName !== (profile?.displayName || user.displayName)) {
+                 await updateProfile(user, { displayName });
+                 const userDocRef = doc(firestore, 'users', user.uid);
+                 const updatedProfileData = {
+                    displayName,
+                    updatedAt: serverTimestamp()
+                };
+                 setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
+                 setProfile(prev => prev ? { ...prev, displayName } : null);
             }
-
-            // Step 2: Update Firebase Auth and Firestore
-            console.log("Updating Auth and Firestore with:", { displayName, photoURL: finalPhotoURL });
-            
-            await updateProfile(user, { displayName, photoURL: finalPhotoURL });
-            
-            const userDocRef = doc(firestore, 'users', user.uid);
-            const updatedProfileData = {
-                displayName,
-                photoURL: finalPhotoURL,
-                updatedAt: serverTimestamp()
-            };
-            
-            // Use non-blocking write for Firestore, but we await the Auth update.
-            setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
-
-            // Step 3: Update local state for immediate UI change
-            setProfile(prev => prev ? { ...prev, displayName, photoURL: finalPhotoURL! } : null);
-            setAvatarPreview(finalPhotoURL!); // This ensures the final URL is used
-            setNewAvatarFile(null); // Clear the selected file
 
             toast({ title: 'Profile updated successfully!' });
 
@@ -208,6 +213,7 @@ export default function ProfilePage() {
             setUploadProgress(null); // Hide progress bar
         }
     };
+
 
     const handleDeleteHistoryItem = async (historyId: string) => {
         if (!user) return;
