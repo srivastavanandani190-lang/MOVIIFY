@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -111,9 +111,9 @@ export default function ProfilePage() {
         setIsSaving(true);
         setUploadProgress(null);
 
-        try {
-            let downloadURL = profile?.photoURL || user.photoURL || '';
+        let downloadURL = profile?.photoURL || user.photoURL || '';
 
+        try {
             // 1. If a new avatar is selected, upload it to Storage
             if (newAvatarFile) {
                 const storage = getStorage();
@@ -140,17 +140,19 @@ export default function ProfilePage() {
             // 2. Update Firebase Auth profile
             await updateProfile(user, { displayName, photoURL: downloadURL });
 
-            // 3. Update Firestore user document
+            // 3. Update Firestore user document (non-blocking)
             const userDocRef = doc(firestore, 'users', user.uid);
             const updatedProfileData = { 
                 displayName, 
                 photoURL: downloadURL, 
                 updatedAt: serverTimestamp() 
             };
-            await setDoc(userDocRef, updatedProfileData, { merge: true });
+            
+            // This is now a non-blocking call that handles its own errors
+            setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
 
             // 4. Update local state to reflect changes immediately
-            setProfile(prev => prev ? { ...prev, displayName, photoURL: downloadURL } : null);
+            setProfile(prev => prev ? { ...prev, displayName, photoURL: downloadURL, email: prev.email, createdAt: prev.createdAt, updatedAt: new Date() } : null);
             setNewAvatarFile(null);
             setAvatarPreview(null);
 
@@ -158,6 +160,7 @@ export default function ProfilePage() {
 
         } catch (error: any) {
             console.error("Error updating profile:", error);
+            // This will catch errors from Storage or Auth profile update, but not from setDoc.
             toast({ variant: 'destructive', title: 'Error updating profile', description: error.message || "An unexpected error occurred." });
         } finally {
             setIsSaving(false);
@@ -302,3 +305,5 @@ export default function ProfilePage() {
         </div>
     );
 }
+
+    
