@@ -16,6 +16,7 @@ import { User, Trash2, Upload, History, X, AlertTriangle, Image as ImageIcon } f
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useMemoFirebase, useCollection } from '@/firebase';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 interface UserProfile {
     displayName: string;
@@ -126,9 +127,8 @@ export default function ProfilePage() {
 
         setIsSaving(true);
         setUploadProgress(null);
-
+        
         try {
-            // Start with the existing photo URL. This will be overwritten if a new avatar is uploaded.
             let photoURL = profile?.photoURL || user.photoURL || '';
 
             // Step 1: If a new avatar file is selected, upload it to Storage.
@@ -137,13 +137,11 @@ export default function ProfilePage() {
                 const storageRef = ref(storage, `avatars/${user.uid}/${newAvatarFile.name}`);
                 const uploadTask = uploadBytesResumable(storageRef, newAvatarFile);
 
-                // Await the upload and get the download URL
+                // Await the upload and get the download URL via a Promise
                 photoURL = await new Promise<string>((resolve, reject) => {
                     uploadTask.on('state_changed',
                         (snapshot) => {
-                            console.log('Bytes transferred:', snapshot.bytesTransferred, 'Total bytes:', snapshot.totalBytes);
                             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            console.log('Upload is ' + progress + '% done');
                             setUploadProgress(progress);
                         },
                         (error) => {
@@ -153,7 +151,6 @@ export default function ProfilePage() {
                         async () => {
                             try {
                                 const url = await getDownloadURL(uploadTask.snapshot.ref);
-                                console.log("File available at", url);
                                 resolve(url);
                             } catch (error) {
                                 reject(error);
@@ -165,7 +162,6 @@ export default function ProfilePage() {
 
             // Step 2: Update Firebase Auth profile
             await updateProfile(user, { displayName, photoURL });
-            console.log('Firebase Auth profile updated.');
 
             // Step 3: Update Firestore document
             const userDocRef = doc(firestore, 'users', user.uid);
@@ -175,8 +171,8 @@ export default function ProfilePage() {
                 updatedAt: serverTimestamp()
             };
             
-            await setDoc(userDocRef, updatedProfileData, { merge: true });
-            console.log('Firestore document updated with payload:', updatedProfileData);
+            // Use the non-blocking function to handle potential permission errors gracefully
+            setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
 
             // Step 4: Update local state to reflect changes immediately
             setProfile(prev => prev ? { ...prev, displayName, photoURL: photoURL! } : null);
@@ -330,5 +326,3 @@ export default function ProfilePage() {
         </div>
     );
 }
-
-    
