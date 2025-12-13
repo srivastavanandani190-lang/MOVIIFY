@@ -67,7 +67,7 @@ export default function ProfilePage() {
                     const data = docSnap.data() as UserProfile;
                     setProfile(data);
                     setDisplayName(data.displayName || '');
-                    setAvatarPreview(data.photoURL || null);
+                    setAvatarPreview(data.photoURL || user.photoURL || null);
                 } else {
                     const newProfileData: UserProfile = {
                         displayName: user.displayName || user.email?.split('@')[0] || 'User',
@@ -99,7 +99,9 @@ export default function ProfilePage() {
             return;
         }
         
+        console.log("File selected:", file);
         setNewAvatarFile(file);
+        // Create a local URL for instant preview
         setAvatarPreview(URL.createObjectURL(file));
     };
 
@@ -112,33 +114,39 @@ export default function ProfilePage() {
         setIsSaving(true);
         setUploadProgress(null);
 
-        let downloadURL = profile?.photoURL || user.photoURL || '';
+        let downloadURL = avatarPreview;
 
         try {
             if (newAvatarFile) {
+                console.log("Uploading new avatar...");
                 const storage = getStorage();
                 const storageRef = ref(storage, `avatars/${user.uid}/${newAvatarFile.name}`);
                 const uploadTask = uploadBytesResumable(storageRef, newAvatarFile);
 
-                downloadURL = await new Promise((resolve, reject) => {
+                downloadURL = await new Promise<string>((resolve, reject) => {
                     uploadTask.on('state_changed',
                         (snapshot) => {
                             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                             setUploadProgress(progress);
                         },
                         (error) => {
+                            console.error("Upload failed:", error);
                             reject(error);
                         },
                         async () => {
                             const url = await getDownloadURL(uploadTask.snapshot.ref);
+                            console.log("File available at", url);
                             resolve(url);
                         }
                     );
                 });
             }
 
+            console.log("Updating Firebase Auth and Firestore with data:", { displayName, photoURL: downloadURL });
+            // Update Firebase Auth profile
             await updateProfile(user, { displayName, photoURL: downloadURL });
 
+            // Prepare data for Firestore
             const userDocRef = doc(firestore, 'users', user.uid);
             const updatedProfileData = { 
                 displayName, 
@@ -146,11 +154,13 @@ export default function ProfilePage() {
                 updatedAt: serverTimestamp() 
             };
             
-            setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
+            // Update Firestore document
+            await setDoc(userDocRef, updatedProfileData, { merge: true });
             
-            setProfile(prev => prev ? { ...prev, displayName, photoURL: downloadURL } : null);
+            // CRITICAL: Update local state to trigger UI re-render
+            setProfile(prev => prev ? { ...prev, displayName, photoURL: downloadURL! } : null);
             setAvatarPreview(downloadURL); // Ensure preview is the final URL
-            setNewAvatarFile(null);
+            setNewAvatarFile(null); // Clear the selected file
 
             toast({ title: 'Profile updated successfully!' });
 
@@ -197,20 +207,23 @@ export default function ProfilePage() {
             </div>
         );
     }
+    
+    console.log("Rendering profile with photoURL:", avatarPreview);
 
     return (
         <div className="container py-12">
             <div className="flex flex-col items-center mb-8">
                  <div className="relative group mb-4">
                     <Avatar className="h-36 w-36 border-4 border-accent shadow-lg">
-                        <AvatarImage src={avatarPreview || ''} alt={displayName} />
-                        <AvatarFallback className="text-5xl"><User /></AvatarFallback>
+                        <AvatarImage src={avatarPreview || undefined} alt={displayName} />
+                        <AvatarFallback className="text-5xl">{displayName?.[0].toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <Button 
                         onClick={() => fileInputRef.current?.click()}
                         variant="outline"
                         size="icon"
                         className="absolute bottom-1 right-1 h-10 w-10 rounded-full bg-background/80 group-hover:bg-accent"
+                        aria-label="Upload new avatar"
                     >
                         <Upload className="h-5 w-5" />
                     </Button>
