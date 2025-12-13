@@ -48,7 +48,7 @@ const uploadAvatar = (
         uploadTask.on('state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log(`Upload is ${progress}% done.`);
+                console.log(`Upload is ${progress}% done. Transferred: ${snapshot.bytesTransferred}, Total: ${snapshot.totalBytes}`);
                 setProgress(Math.round(progress));
             },
             (error: StorageError) => {
@@ -107,7 +107,6 @@ export default function ProfilePage() {
                 const data = docSnap.data() as UserProfile;
                 setProfile(data);
                 setDisplayName(data.displayName || user.displayName || '');
-                // Do not set avatarPreview here, it's for temporary previews
             } else {
                  const newProfileData: UserProfile = {
                     displayName: user.displayName || user.email?.split('@')[0] || 'User',
@@ -141,6 +140,7 @@ export default function ProfilePage() {
         }
         
         setNewAvatarFile(file);
+        setUploadProgress(0); // Reset progress on new file selection
         const previewUrl = URL.createObjectURL(file);
         setAvatarPreview(previewUrl);
     };
@@ -180,7 +180,17 @@ export default function ProfilePage() {
             const avatarChanged = finalPhotoURL !== (profile?.photoURL || user.photoURL);
 
             if (nameChanged || avatarChanged) {
-                console.log("Updating Auth and Firestore with:", { displayName, photoURL: finalPhotoURL });
+                 const updates: { displayName: string, photoURL: string, updatedAt: any, email?: string } = {
+                    displayName,
+                    photoURL: finalPhotoURL,
+                    updatedAt: serverTimestamp(),
+                };
+
+                 if (user.email) {
+                    updates.email = user.email;
+                }
+                
+                console.log("Updating Auth and Firestore with:", updates);
                 
                 await updateProfile(auth.currentUser, { 
                     displayName, 
@@ -188,12 +198,7 @@ export default function ProfilePage() {
                 });
                 
                 const userDocRef = doc(firestore, 'users', user.uid);
-                await setDoc(userDocRef, {
-                    displayName,
-                    photoURL: finalPhotoURL,
-                    email: user.email, // ensure email is preserved
-                    updatedAt: serverTimestamp()
-                }, { merge: true });
+                await setDoc(userDocRef, updates, { merge: true });
 
                  console.log("Firestore document updated successfully.");
             }
