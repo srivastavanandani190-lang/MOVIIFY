@@ -15,7 +15,6 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/
 import { User, Trash2, Upload, History, X, AlertTriangle, Image as ImageIcon } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import Image from 'next/image';
 
 interface UserProfile {
     displayName: string;
@@ -68,6 +67,7 @@ export default function ProfilePage() {
                     const data = docSnap.data() as UserProfile;
                     setProfile(data);
                     setDisplayName(data.displayName || '');
+                    setAvatarPreview(data.photoURL || null);
                 } else {
                     const newProfileData: UserProfile = {
                         displayName: user.displayName || user.email?.split('@')[0] || 'User',
@@ -79,6 +79,7 @@ export default function ProfilePage() {
                     setDoc(userDocRef, newProfileData).then(() => {
                         setProfile(newProfileData);
                         setDisplayName(newProfileData.displayName);
+                        setAvatarPreview(newProfileData.photoURL || null);
                     });
                 }
             });
@@ -114,7 +115,6 @@ export default function ProfilePage() {
         let downloadURL = profile?.photoURL || user.photoURL || '';
 
         try {
-            // 1. If a new avatar is selected, upload it to Storage
             if (newAvatarFile) {
                 const storage = getStorage();
                 const storageRef = ref(storage, `avatars/${user.uid}/${newAvatarFile.name}`);
@@ -137,10 +137,8 @@ export default function ProfilePage() {
                 });
             }
 
-            // 2. Update Firebase Auth profile
             await updateProfile(user, { displayName, photoURL: downloadURL });
 
-            // 3. Update Firestore user document (non-blocking)
             const userDocRef = doc(firestore, 'users', user.uid);
             const updatedProfileData = { 
                 displayName, 
@@ -148,19 +146,16 @@ export default function ProfilePage() {
                 updatedAt: serverTimestamp() 
             };
             
-            // This is now a non-blocking call that handles its own errors
             setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
-
-            // 4. Update local state to reflect changes immediately
-            setProfile(prev => prev ? { ...prev, displayName, photoURL: downloadURL, email: prev.email, createdAt: prev.createdAt, updatedAt: new Date() } : null);
+            
+            setProfile(prev => prev ? { ...prev, displayName, photoURL: downloadURL } : null);
+            setAvatarPreview(downloadURL); // Ensure preview is the final URL
             setNewAvatarFile(null);
-            setAvatarPreview(null);
 
             toast({ title: 'Profile updated successfully!' });
 
         } catch (error: any) {
             console.error("Error updating profile:", error);
-            // This will catch errors from Storage or Auth profile update, but not from setDoc.
             toast({ variant: 'destructive', title: 'Error updating profile', description: error.message || "An unexpected error occurred." });
         } finally {
             setIsSaving(false);
@@ -195,7 +190,7 @@ export default function ProfilePage() {
         }
     };
 
-    if (isUserLoading || !user || !profile) {
+    if (isUserLoading || !profile) {
         return (
             <div className="container flex items-center justify-center py-20">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -205,37 +200,36 @@ export default function ProfilePage() {
 
     return (
         <div className="container py-12">
-            <h1 className="font-headline text-4xl font-bold mb-8">Your Profile</h1>
+            <div className="flex flex-col items-center mb-8">
+                 <div className="relative group mb-4">
+                    <Avatar className="h-36 w-36 border-4 border-accent shadow-lg">
+                        <AvatarImage src={avatarPreview || ''} alt={displayName} />
+                        <AvatarFallback className="text-5xl"><User /></AvatarFallback>
+                    </Avatar>
+                    <Button 
+                        onClick={() => fileInputRef.current?.click()}
+                        variant="outline"
+                        size="icon"
+                        className="absolute bottom-1 right-1 h-10 w-10 rounded-full bg-background/80 group-hover:bg-accent"
+                    >
+                        <Upload className="h-5 w-5" />
+                    </Button>
+                    <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/png, image/jpeg, image/webp" className="hidden" />
+                </div>
+                 <h1 className="font-headline text-4xl font-bold">{displayName}</h1>
+                 <p className="text-muted-foreground">{user?.email}</p>
+            </div>
+
+
             <div className="grid md:grid-cols-3 gap-8">
                 <div className="md:col-span-1 space-y-8">
                      <Card>
                         <CardHeader>
-                            <CardTitle>Account Information</CardTitle>
-                            <CardDescription>Manage your account details.</CardDescription>
+                            <CardTitle>Account Settings</CardTitle>
+                            <CardDescription>Update your display name and avatar.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <div className="flex flex-col items-center gap-4">
-                                 <div className="relative group">
-                                    <Avatar className="h-32 w-32">
-                                        <AvatarImage src={avatarPreview || profile.photoURL || ''} alt={displayName} />
-                                        <AvatarFallback className="text-4xl"><User /></AvatarFallback>
-                                    </Avatar>
-                                    <Button 
-                                        onClick={() => fileInputRef.current?.click()}
-                                        variant="outline"
-                                        size="icon"
-                                        className="absolute bottom-1 right-1 h-8 w-8 rounded-full bg-background/80 group-hover:bg-accent"
-                                    >
-                                        <Upload className="h-4 w-4" />
-                                    </Button>
-                                    <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/png, image/jpeg, image/webp" className="hidden" />
-                                </div>
-                                {uploadProgress !== null && <Progress value={uploadProgress} className="w-full" />}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="email" value={user.email || ''} readOnly disabled />
-                            </div>
+                            {uploadProgress !== null && <Progress value={uploadProgress} className="w-full h-2" />}
                             <div className="space-y-2">
                                 <Label htmlFor="displayName">Display Name</Label>
                                 <Input id="displayName" type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
