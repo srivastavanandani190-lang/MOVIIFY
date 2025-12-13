@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useUser, useAuth, useFirestore } from '@/firebase';
@@ -12,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { updateProfile } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp, collection, deleteDoc, writeBatch, query, orderBy } from 'firebase/firestore';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL, UploadTask } from 'firebase/storage';
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { User, Trash2, Upload, History, X, Image as ImageIcon } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -49,7 +48,7 @@ const uploadAvatar = (
         uploadTask.on('state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log(`Upload is ${progress}% done. Bytes: ${snapshot.bytesTransferred} of ${snapshot.totalBytes}`);
+                console.log(`Upload is ${progress}% done.`);
                 setProgress(Math.round(progress));
             },
             (error) => {
@@ -146,7 +145,6 @@ export default function ProfilePage() {
         setAvatarPreview(previewUrl);
     };
     
-    // Cleanup for object URL to prevent memory leaks
     useEffect(() => {
         let objectUrl: string | null = null;
         if (newAvatarFile && avatarPreview && avatarPreview.startsWith('blob:')) {
@@ -155,14 +153,13 @@ export default function ProfilePage() {
         return () => {
             if (objectUrl) {
                 URL.revokeObjectURL(objectUrl);
-                console.log("Revoked object URL:", objectUrl);
             }
         };
     }, [newAvatarFile, avatarPreview]);
     
 
     const handleSaveProfile = async () => {
-        if (!user || !firestore) {
+        if (!user || !auth.currentUser || !firestore) {
             toast({ variant: 'destructive', title: 'Error', description: 'You must be logged in to update your profile.' });
             return;
         }
@@ -174,44 +171,26 @@ export default function ProfilePage() {
             let finalPhotoURL = profile?.photoURL || user.photoURL || '';
 
             if (newAvatarFile) {
-                // Scenario 1: New avatar is selected for upload
                 finalPhotoURL = await uploadAvatar(newAvatarFile, user.uid, setUploadProgress);
-                console.log("Upload complete. Final URL:", finalPhotoURL);
-
-                // Update Auth profile
-                await updateProfile(user, { displayName, photoURL: finalPhotoURL });
-                console.log("Firebase Auth profile updated with new photoURL and displayName.");
-
-                // Update Firestore document
+                await updateProfile(auth.currentUser, { displayName, photoURL: finalPhotoURL });
                 const userDocRef = doc(firestore, 'users', user.uid);
                 await setDoc(userDocRef, {
                     displayName,
                     photoURL: finalPhotoURL,
                     updatedAt: serverTimestamp()
                 }, { merge: true });
-                console.log("Firestore document updated with new photoURL and displayName.");
-
-                // Update local state to reflect all changes
-                setProfile(prev => prev ? { ...prev, displayName, photoURL: finalPhotoURL } : null);
-                setAvatarPreview(finalPhotoURL);
-                setNewAvatarFile(null); // Clear the selected file
+                setNewAvatarFile(null);
             
             } else if (displayName !== (profile?.displayName || user.displayName)) {
-                // Scenario 2: Only the display name is changed (no new avatar file)
-                 await updateProfile(user, { displayName });
-                 console.log("Firebase Auth profile updated with new displayName.");
-
+                 await updateProfile(auth.currentUser, { displayName });
                  const userDocRef = doc(firestore, 'users', user.uid);
                  await setDoc(userDocRef, {
                     displayName,
                     updatedAt: serverTimestamp()
                  }, { merge: true });
-                 console.log("Firestore document updated with new displayName.");
-
-                 // Update local state
-                 setProfile(prev => prev ? { ...prev, displayName } : null);
             }
 
+            await fetchUserProfile();
             toast({ title: 'Profile updated successfully!' });
 
         } catch (error: any) {
@@ -220,9 +199,9 @@ export default function ProfilePage() {
         } finally {
             setIsSaving(false);
             if (uploadProgress === 100) {
-                 setTimeout(() => setUploadProgress(null), 3000);
-            } else {
-                 setUploadProgress(0);
+                 setTimeout(() => setUploadProgress(null), 2000);
+            } else if (uploadProgress !== null && uploadProgress > 0) {
+                 setUploadProgress(null);
             }
         }
     };
@@ -382,5 +361,3 @@ export default function ProfilePage() {
         </div>
     );
 }
-
-    
