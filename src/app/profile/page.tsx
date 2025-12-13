@@ -48,7 +48,7 @@ const uploadAvatar = (
         uploadTask.on('state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log(`Upload is ${progress}% done.`);
+                console.log(`Upload is ${progress}% done. Bytes: ${snapshot.bytesTransferred}/${snapshot.totalBytes}`);
                 setProgress(Math.round(progress));
             },
             (error: StorageError) => {
@@ -167,22 +167,30 @@ export default function ProfilePage() {
         }
 
         setIsSaving(true);
-        setUploadProgress(0);
+        setUploadProgress(0); // Reset progress on new save attempt
         
         try {
             let finalPhotoURL = profile?.photoURL || user.photoURL || '';
 
+            // --- Corrected Upload Flow ---
             if (newAvatarFile) {
+                console.log("A new file is selected, starting upload process.");
                 finalPhotoURL = await uploadAvatar(newAvatarFile, user.uid, setUploadProgress);
+                console.log("Upload complete, got final URL:", finalPhotoURL);
             }
 
-            // Update Auth and Firestore only if there are changes to displayName or a new avatar was uploaded.
+            // --- Update Auth and Firestore ---
             const nameChanged = displayName !== (profile?.displayName || user.displayName);
-            const avatarChanged = newAvatarFile !== null;
+            // The avatar has changed if we got a new URL from the upload process.
+            const avatarChanged = finalPhotoURL !== (profile?.photoURL || user.photoURL);
 
             if (nameChanged || avatarChanged) {
-                console.log("Updating profile with:", { displayName, photoURL: finalPhotoURL });
-                await updateProfile(auth.currentUser, { displayName, photoURL: finalPhotoURL });
+                console.log("Updating Auth and Firestore with:", { displayName, photoURL: finalPhotoURL });
+                
+                await updateProfile(auth.currentUser, { 
+                    displayName, 
+                    photoURL: finalPhotoURL 
+                });
                 
                 const userDocRef = doc(firestore, 'users', user.uid);
                 await setDoc(userDocRef, {
@@ -194,7 +202,7 @@ export default function ProfilePage() {
                  console.log("Firestore document updated successfully.");
             }
             
-            // Refetch profile to get the latest data.
+            // This is now safe to call after all async operations are done.
             await fetchUserProfile(); 
             setNewAvatarFile(null); // Clear the selected file after saving.
 
@@ -205,9 +213,10 @@ export default function ProfilePage() {
             toast({ variant: 'destructive', title: 'Error updating profile', description: error.message || "An unexpected error occurred." });
         } finally {
             setIsSaving(false);
+            // Hide progress bar after a short delay on success, hide immediately on failure
             if (uploadProgress === 100) {
                  setTimeout(() => setUploadProgress(null), 2000);
-            } else if (uploadProgress !== null) {
+            } else {
                  setUploadProgress(null);
             }
         }
@@ -259,6 +268,7 @@ export default function ProfilePage() {
     };
 
     const hasChanges = newAvatarFile !== null || (profile && displayName !== profile.displayName);
+    const imageToShow = avatarPreview || profile?.photoURL;
 
     return (
         <div className="container py-12">
@@ -273,7 +283,7 @@ export default function ProfilePage() {
                             <div className="flex flex-col items-center space-y-4">
                                 <div className="relative group">
                                     <Avatar className="h-36 w-36 border-4 border-accent shadow-lg">
-                                        <AvatarImage src={avatarPreview || undefined} alt={displayName} />
+                                        <AvatarImage src={imageToShow || undefined} alt={displayName} />
                                         <AvatarFallback className="text-5xl">{displayName?.[0].toUpperCase()}</AvatarFallback>
                                     </Avatar>
                                     <Button 
@@ -291,10 +301,10 @@ export default function ProfilePage() {
                                 <p className="text-sm text-muted-foreground">{user?.email}</p>
                             </div>
 
-                            {uploadProgress !== null && uploadProgress > 0 && (
-                                <div className="w-full space-y-1 text-center">
-                                    <Progress value={uploadProgress} className="h-2 bg-green-500/20 [&>div]:bg-green-500" />
-                                    <p className="text-xs text-green-500">
+                            {uploadProgress !== null && (
+                                <div className="w-full space-y-2 text-center">
+                                    <Progress value={uploadProgress} className="h-2" />
+                                    <p className="text-xs text-primary">
                                         {uploadProgress < 100 ? `Uploading: ${uploadProgress}%` : 'Upload complete!'}
                                     </p>
                                 </div>
@@ -305,7 +315,7 @@ export default function ProfilePage() {
                                 <Input id="displayName" type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} disabled={isSaving}/>
                             </div>
                             
-                            <Button onClick={handleSaveProfile} disabled={isSaving || !hasChanges} className="w-full bg-red-600 hover:bg-red-700 text-white disabled:bg-red-900/50">
+                            <Button onClick={handleSaveProfile} disabled={isSaving || !hasChanges} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50">
                                {getButtonText()}
                             </Button>
                         </CardContent>
