@@ -2,8 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChevronDown, Menu, Search } from 'lucide-react';
-
+import { ChevronDown, Menu, Search, User as UserIcon, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { MOVIIFYLogo } from '@/components/icons';
 import { Input } from '@/components/ui/input';
@@ -18,9 +17,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { FormEvent } from 'react';
 import { genreMap } from '@/lib/data';
+import { useUser, useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -40,6 +43,8 @@ const navLinks = [
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -48,6 +53,11 @@ export function Header() {
     if (query.trim()) {
       router.push(`/search?query=${encodeURIComponent(query)}`);
     }
+  };
+
+  const handleLogout = () => {
+    signOut(auth);
+    router.push('/');
   };
 
   return (
@@ -143,12 +153,37 @@ export function Header() {
             </div>
           </form>
            <div className="hidden sm:flex items-center gap-2">
-              <Button asChild variant="ghost">
-                  <Link href="/login">Login</Link>
-              </Button>
-              <Button asChild>
-                  <Link href="/signup">Sign Up</Link>
-              </Button>
+              {!isUserLoading && user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-2">
+                       <Avatar className="h-8 w-8">
+                          <AvatarImage src={user.photoURL ?? ''} />
+                          <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                      <span>{user.email}</span>
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem disabled>Profile</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <>
+                  <Button asChild variant="ghost">
+                      <Link href="/login">Login</Link>
+                  </Button>
+                  <Button asChild>
+                      <Link href="/signup">Sign Up</Link>
+                  </Button>
+                </>
+              )}
            </div>
 
           <Button variant="ghost" size="icon" className="sm:hidden">
