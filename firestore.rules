@@ -1,0 +1,160 @@
+/**
+ * Core Philosophy: This ruleset enforces a strict user-ownership model for private data,
+ * while allowing public read access for shared application content like movies and genres.
+ * User-generated content, such as comments, can be created by any authenticated user
+ * but can only be modified or deleted by the original author. The default security
+ * posture is to deny all access unless explicitly granted.
+ *
+ * Data Structure:
+ * - /users/{userId}: Contains private user profile data, accessible only by the owner.
+ * - /movies/{movieId}: Public movie catalog data.
+ * - /genres/{genreId}: Public movie genre data.
+ * - /platforms/{platformId}: Public streaming platform data.
+ * - /moviePlatforms/{moviePlatformId}: Public mapping of movies to platforms.
+ * - /movies/{movieId}/comments/{commentId}: User-generated comments, nested under movies.
+ * - /recommendations/{recommendationId}: Admin-managed recommendations, currently locked down.
+ *
+ * Key Security Decisions:
+ * - User Isolation: A user can only access their own document within the `/users` collection.
+ *   Listing all users is strictly forbidden.
+ * - Public Read, Admin Write: Core catalog data (movies, genres, etc.) is publicly
+ *   readable by all clients. However, write operations are disabled by default pending
+ *   the implementation of an admin-only role system.
+ * - Content Ownership: A user who creates a comment is the sole owner and is the only
+ *   one who can update or delete it.
+ * - Secure by Default: Collections intended for admin-only use, like `/recommendations`,
+ *   are completely locked down until a proper admin verification function is implemented.
+ *
+ * Denormalization for Authorization:
+ * To ensure fast and secure authorization checks, these rules rely on denormalized data.
+ * For example, each document in `/movies/{movieId}/comments` contains a `userId` field.
+ * This allows security rules to verify comment ownership directly from the document itself,
+ * avoiding slow and costly `get()` calls to other collections.
+ *
+ * Structural Segregation:
+ * The data model effectively segregates private user data into the `/users` collection
+ * and public data into top-level collections like `/movies`. This separation simplifies
+ * rules and makes public queries (like listing all movies) secure and performant.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for reusable logic
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // A more robust check for update/delete operations, ensuring the document exists.
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Rules for a user's own profile document.
+     * @path /users/{userId}
+     * @allow (create) A new user can create their own profile document.
+     * @deny (get) A user cannot read another user's profile.
+     * @principle Restricts access to a user's own data tree.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false; // Disallow listing all users for security and privacy.
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for the public movie catalog.
+     * @path /movies/{movieId}
+     * @allow (get) Any user, signed in or not, can read movie data.
+     * @deny (create) A client cannot create a new movie document.
+     * @principle Public read access for catalog data, with writes restricted to a backend process.
+     */
+    match /movies/{movieId} {
+      allow get: if true;
+      allow list: if true;
+      // CRITICAL: Cannot implement owner-only writes. The 'Movie' entity is missing an 'ownerId' or 'authorId' field.
+      allow create, update, delete: if false; // TODO: Implement admin-only writes once an admin role system is defined.
+    }
+
+    /**
+     * @description Rules for movie genres, which are public data.
+     * @path /genres/{genreId}
+     * @allow (get) Any user, signed in or not, can read genre data.
+     * @deny (create) A client cannot create a new genre document.
+     * @principle Public read access for catalog data, with writes restricted to a backend process.
+     */
+    match /genres/{genreId} {
+      allow get: if true;
+      allow list: if true;
+      // CRITICAL: Cannot implement owner-only writes. The 'Genre' entity is missing an 'ownerId' or 'authorId' field.
+      allow create, update, delete: if false; // TODO: Implement admin-only writes once an admin role system is defined.
+    }
+
+    /**
+     * @description Rules for streaming platforms, which are public data.
+     * @path /platforms/{platformId}
+     * @allow (get) Any user, signed in or not, can read platform data.
+     * @deny (create) A client cannot create a new platform document.
+     * @principle Public read access for catalog data, with writes restricted to a backend process.
+     */
+    match /platforms/{platformId} {
+      allow get: if true;
+      allow list: if true;
+      // CRITICAL: Cannot implement owner-only writes. The 'Platform' entity is missing an 'ownerId' or 'authorId' field.
+      allow create, update, delete: if false; // TODO: Implement admin-only writes once an admin role system is defined.
+    }
+
+    /**
+     * @description Rules for the join collection mapping movies to platforms.
+     * @path /moviePlatforms/{moviePlatformId}
+     * @allow (list) Any user, signed in or not, can query the movie-platform relationships.
+     * @deny (create) A client cannot create a new movie-platform link.
+     * @principle Public read access for catalog data, with writes restricted to a backend process.
+     */
+    match /moviePlatforms/{moviePlatformId} {
+      allow get: if true;
+      allow list: if true;
+      // CRITICAL: Cannot implement owner-only writes. The 'MoviePlatform' entity is missing an 'ownerId' or 'authorId' field.
+      allow create, update, delete: if false; // TODO: Implement admin-only writes once an admin role system is defined.
+    }
+
+    /**
+     * @description Rules for user-generated comments on movies.
+     * @path /movies/{movieId}/comments/{commentId}
+     * @allow (create) A signed-in user can create a comment on a movie.
+     * @deny (update) A user cannot update a comment written by someone else.
+     * @principle Enforces document ownership for writes on user-generated content.
+     */
+    match /movies/{movieId}/comments/{commentId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isExistingOwner(resource.data.userId) && request.resource.data.userId == resource.data.userId && request.resource.data.movieId == resource.data.movieId;
+      allow delete: if isExistingOwner(resource.data.userId);
+    }
+
+    /**
+     * @description Rules for movie recommendations.
+     * @path /recommendations/{recommendationId}
+     * @allow (none) No client access is permitted.
+     * @deny (get) A normal user cannot read recommendations.
+     * @principle Secures sensitive or admin-managed data by default.
+     */
+    match /recommendations/{recommendationId} {
+      // This collection is locked down until an admin role system is implemented.
+      // TODO: Add an `isAdmin()` check here once custom claims or an admin collection is set up.
+      allow get: if false;
+      allow list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+  }
+}
