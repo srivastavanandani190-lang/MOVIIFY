@@ -2,7 +2,7 @@
 
 import { useUser, useAuth, useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { updateProfile } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp, collection, deleteDoc, writeBatch, query, orderBy } from 'firebase/firestore';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, UploadTask } from 'firebase/storage';
-import { User, Trash2, Upload, History, X, AlertTriangle, Image as ImageIcon } from 'lucide-react';
+import { User, Trash2, Upload, History, X, Image as ImageIcon } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useMemoFirebase, useCollection } from '@/firebase';
@@ -38,15 +38,18 @@ const uploadAvatar = (
     userId: string, 
     setProgress: (progress: number) => void
 ): Promise<string> => {
-    const storage = getStorage();
-    const storageRef = ref(storage, `avatars/${userId}/${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    return new Promise((resolve, reject) => {
+        const storage = getStorage();
+        const storageRef = ref(storage, `avatars/${userId}/${file.name}`);
+        const uploadTask = uploadBytesResumable(storageRef, file);
 
-    return new Promise<string>((resolve, reject) => {
+        console.log("Starting upload for file:", file.name);
+
         uploadTask.on('state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                setProgress(progress);
+                console.log(`Upload is ${progress}% done`);
+                setProgress(Math.round(progress));
             },
             (error) => {
                 console.error("Upload failed:", error);
@@ -55,8 +58,11 @@ const uploadAvatar = (
             async () => {
                 try {
                     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    console.log("File available at", downloadURL);
+                    setProgress(100); // Ensure it hits 100 on completion
                     resolve(downloadURL);
                 } catch (error) {
+                    console.error("Failed to get download URL:", error);
                     reject(error);
                 }
             }
@@ -94,32 +100,35 @@ export default function ProfilePage() {
         }
     }, [isUserLoading, user, router]);
 
-    useEffect(() => {
+    const fetchUserProfile = useCallback(async () => {
         if (user && firestore) {
             const userDocRef = doc(firestore, 'users', user.uid);
-            getDoc(userDocRef).then((docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data() as UserProfile;
-                    setProfile(data);
-                    setDisplayName(data.displayName || '');
-                    setAvatarPreview(data.photoURL || user.photoURL || null);
-                } else {
-                    const newProfileData: UserProfile = {
-                        displayName: user.displayName || user.email?.split('@')[0] || 'User',
-                        photoURL: user.photoURL || '',
-                        email: user.email || '',
-                        createdAt: serverTimestamp(),
-                        updatedAt: serverTimestamp(),
-                    };
-                    setDoc(userDocRef, newProfileData).then(() => {
-                        setProfile(newProfileData);
-                        setDisplayName(newProfileData.displayName);
-                        setAvatarPreview(newProfileData.photoURL || null);
-                    });
-                }
-            });
+            const docSnap = await getDoc(userDocRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data() as UserProfile;
+                setProfile(data);
+                setDisplayName(data.displayName || '');
+                setAvatarPreview(data.photoURL || user.photoURL || null);
+            } else {
+                 const newProfileData: UserProfile = {
+                    displayName: user.displayName || user.email?.split('@')[0] || 'User',
+                    photoURL: user.photoURL || '',
+                    email: user.email || '',
+                    createdAt: serverTimestamp(),
+                    updatedAt: serverTimestamp(),
+                };
+                await setDoc(userDocRef, newProfileData)
+                setProfile(newProfileData);
+                setDisplayName(newProfileData.displayName);
+                setAvatarPreview(newProfileData.photoURL || null);
+            }
         }
     }, [user, firestore]);
+
+    useEffect(() => {
+        fetchUserProfile();
+    }, [fetchUserProfile]);
+
 
      // Clean up the object URL to prevent memory leaks
     useEffect(() => {
@@ -159,29 +168,35 @@ export default function ProfilePage() {
         }
 
         setIsSaving(true);
-        setUploadProgress(null);
+        setUploadProgress(0); // Reset progress
         
         try {
-            let photoURL = profile?.photoURL || user.photoURL || '';
+            let finalPhotoURL = profile?.photoURL || user.photoURL || '';
 
+            // Step 1: Upload new avatar if one is selected
             if (newAvatarFile) {
-                photoURL = await uploadAvatar(newAvatarFile, user.uid, setUploadProgress);
+                finalPhotoURL = await uploadAvatar(newAvatarFile, user.uid, setUploadProgress);
             }
 
-            await updateProfile(user, { displayName, photoURL });
+            // Step 2: Update Firebase Auth and Firestore
+            console.log("Updating Auth and Firestore with:", { displayName, photoURL: finalPhotoURL });
+            
+            await updateProfile(user, { displayName, photoURL: finalPhotoURL });
             
             const userDocRef = doc(firestore, 'users', user.uid);
             const updatedProfileData = {
                 displayName,
-                photoURL,
+                photoURL: finalPhotoURL,
                 updatedAt: serverTimestamp()
             };
             
+            // Use non-blocking write for Firestore, but we await the Auth update.
             setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
 
-            setProfile(prev => prev ? { ...prev, displayName, photoURL: photoURL! } : null);
-            setAvatarPreview(photoURL!);
-            setNewAvatarFile(null);
+            // Step 3: Update local state for immediate UI change
+            setProfile(prev => prev ? { ...prev, displayName, photoURL: finalPhotoURL! } : null);
+            setAvatarPreview(finalPhotoURL!); // This ensures the final URL is used
+            setNewAvatarFile(null); // Clear the selected file
 
             toast({ title: 'Profile updated successfully!' });
 
@@ -190,7 +205,7 @@ export default function ProfilePage() {
             toast({ variant: 'destructive', title: 'Error updating profile', description: error.message || "An unexpected error occurred." });
         } finally {
             setIsSaving(false);
-            setUploadProgress(null);
+            setUploadProgress(null); // Hide progress bar
         }
     };
 
@@ -258,7 +273,14 @@ export default function ProfilePage() {
                                 <p className="text-sm text-muted-foreground">{user?.email}</p>
                             </div>
 
-                            {uploadProgress !== null && <Progress value={uploadProgress} className="w-full h-2" />}
+                            {uploadProgress !== null && (
+                                <div className="w-full space-y-1 text-center">
+                                    <Progress value={uploadProgress} className="h-2" />
+                                    <p className="text-xs text-primary">
+                                        {uploadProgress < 100 ? `Uploading: ${uploadProgress}%` : 'Upload complete!'}
+                                    </p>
+                                </div>
+                            )}
                             
                             <div className="space-y-2">
                                 <Label htmlFor="displayName">Display Name</Label>
@@ -266,7 +288,7 @@ export default function ProfilePage() {
                             </div>
                             
                             <Button onClick={handleSaveProfile} disabled={isSaving} className="w-full">
-                                {isSaving ? (uploadProgress !== null ? `Uploading: ${Math.round(uploadProgress)}%` : 'Saving...') : 'Save Changes'}
+                                {isSaving ? (uploadProgress !== null && uploadProgress < 100 ? `Uploading: ${uploadProgress}%` : 'Saving...') : 'Save Changes'}
                             </Button>
                         </CardContent>
                     </Card>
