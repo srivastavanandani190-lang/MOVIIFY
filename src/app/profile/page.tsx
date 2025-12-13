@@ -16,7 +16,6 @@ import { User, Trash2, Upload, History, X, Image as ImageIcon } from 'lucide-rea
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useMemoFirebase, useCollection } from '@/firebase';
-import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 interface UserProfile {
     displayName: string;
@@ -32,7 +31,7 @@ interface SearchHistoryItem {
     timestamp: any;
 }
 
-// Helper function to handle the file upload and progress tracking
+// Dedicated helper function to handle the file upload and progress tracking
 const uploadAvatar = (
     file: File, 
     userId: string, 
@@ -40,7 +39,8 @@ const uploadAvatar = (
 ): Promise<string> => {
     return new Promise((resolve, reject) => {
         const storage = getStorage();
-        const storageRef = ref(storage, `avatars/${userId}/${file.name}`);
+        // Use a consistent file name for the avatar to overwrite it
+        const storageRef = ref(storage, `avatars/${userId}/profile.jpg`);
         const uploadTask = uploadBytesResumable(storageRef, file);
 
         console.log("Starting upload for file:", file.name);
@@ -59,7 +59,6 @@ const uploadAvatar = (
                 try {
                     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                     console.log("File available at", downloadURL);
-                    setProgress(100); // Ensure it hits 100 on completion
                     resolve(downloadURL);
                 } catch (error) {
                     console.error("Failed to get download URL:", error);
@@ -69,7 +68,6 @@ const uploadAvatar = (
         );
     });
 };
-
 
 export default function ProfilePage() {
     const { user, isUserLoading } = useUser();
@@ -107,7 +105,7 @@ export default function ProfilePage() {
             if (docSnap.exists()) {
                 const data = docSnap.data() as UserProfile;
                 setProfile(data);
-                setDisplayName(data.displayName || '');
+                setDisplayName(data.displayName || user.displayName || '');
                 setAvatarPreview(data.photoURL || user.photoURL || null);
             } else {
                  const newProfileData: UserProfile = {
@@ -117,7 +115,7 @@ export default function ProfilePage() {
                     createdAt: serverTimestamp(),
                     updatedAt: serverTimestamp(),
                 };
-                await setDoc(userDocRef, newProfileData)
+                await setDoc(userDocRef, newProfileData);
                 setProfile(newProfileData);
                 setDisplayName(newProfileData.displayName);
                 setAvatarPreview(newProfileData.photoURL || null);
@@ -128,22 +126,6 @@ export default function ProfilePage() {
     useEffect(() => {
         fetchUserProfile();
     }, [fetchUserProfile]);
-
-
-     // Clean up the object URL to prevent memory leaks
-    useEffect(() => {
-        let objectUrl: string | null = null;
-        if (newAvatarFile) {
-            objectUrl = URL.createObjectURL(newAvatarFile);
-            setAvatarPreview(objectUrl);
-        }
-
-        return () => {
-            if (objectUrl) {
-                URL.revokeObjectURL(objectUrl);
-            }
-        };
-    }, [newAvatarFile]);
 
     const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -159,7 +141,24 @@ export default function ProfilePage() {
         }
         
         setNewAvatarFile(file);
+        // Create and set the preview URL
+        const previewUrl = URL.createObjectURL(file);
+        setAvatarPreview(previewUrl);
     };
+
+    // Clean up the object URL to prevent memory leaks
+    useEffect(() => {
+        let objectUrl: string | null = null;
+        if (newAvatarFile && avatarPreview && avatarPreview.startsWith('blob:')) {
+            objectUrl = avatarPreview;
+        }
+        return () => {
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [newAvatarFile, avatarPreview]);
+    
 
     const handleSaveProfile = async () => {
         if (!user || !firestore) {
@@ -168,36 +167,46 @@ export default function ProfilePage() {
         }
 
         setIsSaving(true);
-        setUploadProgress(0);
+        setUploadProgress(null); // Reset progress on new save
         
         try {
             let finalPhotoURL = profile?.photoURL || user.photoURL || '';
 
+            // Scenario 1: New avatar is selected for upload
             if (newAvatarFile) {
                 finalPhotoURL = await uploadAvatar(newAvatarFile, user.uid, setUploadProgress);
-                
+                console.log("Upload complete. Final URL:", finalPhotoURL);
+
+                // Update Auth and Firestore with new photoURL and potentially new displayName
                 await updateProfile(user, { displayName, photoURL: finalPhotoURL });
-                
+                console.log("Firebase Auth profile updated.");
+
                 const userDocRef = doc(firestore, 'users', user.uid);
-                const updatedProfileData = {
+                await setDoc(userDocRef, {
                     displayName,
                     photoURL: finalPhotoURL,
                     updatedAt: serverTimestamp()
-                };
-                
-                setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
+                }, { merge: true });
+                console.log("Firestore document updated with new photoURL and displayName.");
 
-                setProfile(prev => prev ? { ...prev, displayName, photoURL: finalPhotoURL! } : null);
-                setAvatarPreview(finalPhotoURL);
-                setNewAvatarFile(null);
+                // Update local state to reflect changes
+                setProfile(prev => prev ? { ...prev, displayName, photoURL: finalPhotoURL } : null);
+                setAvatarPreview(finalPhotoURL); // Set final URL for preview
+                setNewAvatarFile(null); // Clear the selected file
+            
+            // Scenario 2: Only the display name is changed
             } else if (displayName !== (profile?.displayName || user.displayName)) {
                  await updateProfile(user, { displayName });
+                 console.log("Firebase Auth profile updated with new displayName.");
+
                  const userDocRef = doc(firestore, 'users', user.uid);
-                 const updatedProfileData = {
+                 await setDoc(userDocRef, {
                     displayName,
                     updatedAt: serverTimestamp()
-                };
-                 setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
+                 }, { merge: true });
+                 console.log("Firestore document updated with new displayName.");
+
+                 // Update local state
                  setProfile(prev => prev ? { ...prev, displayName } : null);
             }
 
@@ -208,7 +217,9 @@ export default function ProfilePage() {
             toast({ variant: 'destructive', title: 'Error updating profile', description: error.message || "An unexpected error occurred." });
         } finally {
             setIsSaving(false);
-            setUploadProgress(null);
+            // Don't reset progress to null immediately, so user can see "100%"
+            // Maybe reset after a few seconds
+            setTimeout(() => setUploadProgress(null), 3000);
         }
     };
 
@@ -247,6 +258,16 @@ export default function ProfilePage() {
         );
     }
     
+    const getButtonText = () => {
+        if (isSaving && uploadProgress !== null) {
+            return `Uploading: ${uploadProgress}%`;
+        }
+        if (isSaving) {
+            return 'Saving...';
+        }
+        return 'Save Changes';
+    };
+
     return (
         <div className="container py-12">
             <div className="grid md:grid-cols-3 gap-8">
@@ -269,6 +290,7 @@ export default function ProfilePage() {
                                         size="icon"
                                         className="absolute bottom-1 right-1 h-10 w-10 rounded-full bg-background/80 group-hover:bg-accent"
                                         aria-label="Upload new avatar"
+                                        disabled={isSaving}
                                     >
                                         <Upload className="h-5 w-5" />
                                     </Button>
@@ -288,11 +310,11 @@ export default function ProfilePage() {
                             
                             <div className="space-y-2">
                                 <Label htmlFor="displayName">Display Name</Label>
-                                <Input id="displayName" type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+                                <Input id="displayName" type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} disabled={isSaving}/>
                             </div>
                             
                             <Button onClick={handleSaveProfile} disabled={isSaving} className="w-full bg-red-600 hover:bg-red-700 text-white">
-                                {isSaving ? (uploadProgress !== null && uploadProgress < 100 ? `Uploading: ${uploadProgress}%` : 'Saving...') : 'Save Changes'}
+                               {getButtonText()}
                             </Button>
                         </CardContent>
                     </Card>
