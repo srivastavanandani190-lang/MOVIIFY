@@ -1,6 +1,6 @@
 'use client';
 
-import { useUser, useAuth, useFirestore, useCollection, useMemoFirebase, setDocumentNonBlocking } from '@/firebase';
+import { useUser, useAuth, useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,6 +15,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/
 import { User, Trash2, Upload, History, X, AlertTriangle, Image as ImageIcon } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useMemoFirebase, useCollection } from '@/firebase';
 
 interface UserProfile {
     displayName: string;
@@ -126,10 +127,10 @@ export default function ProfilePage() {
         setIsSaving(true);
         setUploadProgress(null);
 
-        // Start with the existing photo URL. This will be overwritten if a new avatar is uploaded.
-        let photoURL = profile?.photoURL || user.photoURL || '';
-
         try {
+            // Start with the existing photo URL. This will be overwritten if a new avatar is uploaded.
+            let photoURL = profile?.photoURL || user.photoURL || '';
+
             // Step 1: If a new avatar file is selected, upload it to Storage.
             if (newAvatarFile) {
                 const storage = getStorage();
@@ -140,7 +141,9 @@ export default function ProfilePage() {
                 photoURL = await new Promise<string>((resolve, reject) => {
                     uploadTask.on('state_changed',
                         (snapshot) => {
+                            console.log('Bytes transferred:', snapshot.bytesTransferred, 'Total bytes:', snapshot.totalBytes);
                             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            console.log('Upload is ' + progress + '% done');
                             setUploadProgress(progress);
                         },
                         (error) => {
@@ -172,8 +175,8 @@ export default function ProfilePage() {
                 updatedAt: serverTimestamp()
             };
             
-            console.log('Payload for Firestore:', updatedProfileData);
-            setDocumentNonBlocking(userDocRef, updatedProfileData, { merge: true });
+            await setDoc(userDocRef, updatedProfileData, { merge: true });
+            console.log('Firestore document updated with payload:', updatedProfileData);
 
             // Step 4: Update local state to reflect changes immediately
             setProfile(prev => prev ? { ...prev, displayName, photoURL: photoURL! } : null);
@@ -327,3 +330,5 @@ export default function ProfilePage() {
         </div>
     );
 }
+
+    
