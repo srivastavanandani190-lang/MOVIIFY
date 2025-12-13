@@ -86,6 +86,21 @@ export default function ProfilePage() {
         }
     }, [user, firestore]);
 
+     // Clean up the object URL to prevent memory leaks
+    useEffect(() => {
+        let objectUrl: string | null = null;
+        if (newAvatarFile) {
+            objectUrl = URL.createObjectURL(newAvatarFile);
+            setAvatarPreview(objectUrl);
+        }
+
+        return () => {
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [newAvatarFile]);
+
     const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -99,10 +114,7 @@ export default function ProfilePage() {
             return;
         }
         
-        console.log("File selected:", file);
         setNewAvatarFile(file);
-        // Create a local URL for instant preview
-        setAvatarPreview(URL.createObjectURL(file));
     };
 
     const handleSaveProfile = async () => {
@@ -114,9 +126,10 @@ export default function ProfilePage() {
         setIsSaving(true);
         setUploadProgress(null);
 
-        let downloadURL = avatarPreview;
+        let downloadURL = profile?.photoURL || user.photoURL; // Start with existing photo URL
 
         try {
+            // Step 1: If a new avatar is selected, upload it to Storage
             if (newAvatarFile) {
                 console.log("Uploading new avatar...");
                 const storage = getStorage();
@@ -128,39 +141,47 @@ export default function ProfilePage() {
                         (snapshot) => {
                             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                             setUploadProgress(progress);
+                            console.log('Upload is ' + progress + '% done');
                         },
                         (error) => {
                             console.error("Upload failed:", error);
                             reject(error);
                         },
                         async () => {
-                            const url = await getDownloadURL(uploadTask.snapshot.ref);
-                            console.log("File available at", url);
-                            resolve(url);
+                            try {
+                                const url = await getDownloadURL(uploadTask.snapshot.ref);
+                                console.log("File available at", url);
+                                resolve(url);
+                            } catch (error) {
+                                reject(error);
+                            }
                         }
                     );
                 });
             }
 
             console.log("Updating Firebase Auth and Firestore with data:", { displayName, photoURL: downloadURL });
-            // Update Firebase Auth profile
-            await updateProfile(user, { displayName, photoURL: downloadURL });
 
-            // Prepare data for Firestore
+            // Step 2: Update Firebase Auth profile
+            await updateProfile(user, { displayName, photoURL: downloadURL });
+            console.log('Firebase Auth profile updated.');
+
+            // Step 3: Update Firestore document
             const userDocRef = doc(firestore, 'users', user.uid);
-            const updatedProfileData = { 
-                displayName, 
-                photoURL: downloadURL, 
-                updatedAt: serverTimestamp() 
+            const updatedProfileData = {
+                displayName,
+                photoURL: downloadURL,
+                updatedAt: serverTimestamp()
             };
             
-            // Update Firestore document
+            console.log('Payload for Firestore:', updatedProfileData);
             await setDoc(userDocRef, updatedProfileData, { merge: true });
-            
-            // CRITICAL: Update local state to trigger UI re-render
+            console.log('Firestore document updated.');
+
+            // Step 4: Update local state to reflect changes immediately
             setProfile(prev => prev ? { ...prev, displayName, photoURL: downloadURL! } : null);
-            setAvatarPreview(downloadURL); // Ensure preview is the final URL
-            setNewAvatarFile(null); // Clear the selected file
+            setAvatarPreview(downloadURL!); // Ensure preview shows the final, permanent URL
+            setNewAvatarFile(null); // Clear the selected file state
 
             toast({ title: 'Profile updated successfully!' });
 
@@ -172,7 +193,6 @@ export default function ProfilePage() {
             setUploadProgress(null);
         }
     };
-
 
     const handleDeleteHistoryItem = async (historyId: string) => {
         if (!user) return;
@@ -208,8 +228,6 @@ export default function ProfilePage() {
         );
     }
     
-    console.log("Rendering profile with photoURL:", avatarPreview);
-
     return (
         <div className="container py-12">
             <div className="flex flex-col items-center mb-8">
