@@ -73,12 +73,12 @@ export default function ProfilePage() {
                         displayName: user.displayName || user.email?.split('@')[0] || 'User',
                         photoURL: user.photoURL || '',
                         email: user.email || '',
-                        createdAt: serverTimestamp(),
-                        updatedAt: serverTimestamp(),
+createdAt: serverTimestamp(),
+updatedAt: serverTimestamp(),
                     };
                     setDoc(userDocRef, newProfileData).then(() => {
                         setProfile(newProfileData);
-                        setDisplayName(newProfileData.displayName);
+setDisplayName(newProfileData.displayName);
                     });
                 }
             });
@@ -305,5 +305,3 @@ export default function ProfilePage() {
         </div>
     );
 }
-
-    
