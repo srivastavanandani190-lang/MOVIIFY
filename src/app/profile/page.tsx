@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useUser, useAuth, useFirestore } from '@/firebase';
@@ -48,7 +49,7 @@ const uploadAvatar = (
         uploadTask.on('state_changed',
             (snapshot) => {
                 const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log(`Upload is ${progress}% done`);
+                console.log(`Upload is ${progress}% done. Bytes: ${snapshot.bytesTransferred} of ${snapshot.totalBytes}`);
                 setProgress(Math.round(progress));
             },
             (error) => {
@@ -141,12 +142,11 @@ export default function ProfilePage() {
         }
         
         setNewAvatarFile(file);
-        // Create and set the preview URL
         const previewUrl = URL.createObjectURL(file);
         setAvatarPreview(previewUrl);
     };
-
-    // Clean up the object URL to prevent memory leaks
+    
+    // Cleanup for object URL to prevent memory leaks
     useEffect(() => {
         let objectUrl: string | null = null;
         if (newAvatarFile && avatarPreview && avatarPreview.startsWith('blob:')) {
@@ -155,6 +155,7 @@ export default function ProfilePage() {
         return () => {
             if (objectUrl) {
                 URL.revokeObjectURL(objectUrl);
+                console.log("Revoked object URL:", objectUrl);
             }
         };
     }, [newAvatarFile, avatarPreview]);
@@ -167,20 +168,21 @@ export default function ProfilePage() {
         }
 
         setIsSaving(true);
-        setUploadProgress(null); // Reset progress on new save
+        setUploadProgress(0);
         
         try {
             let finalPhotoURL = profile?.photoURL || user.photoURL || '';
 
-            // Scenario 1: New avatar is selected for upload
             if (newAvatarFile) {
+                // Scenario 1: New avatar is selected for upload
                 finalPhotoURL = await uploadAvatar(newAvatarFile, user.uid, setUploadProgress);
                 console.log("Upload complete. Final URL:", finalPhotoURL);
 
-                // Update Auth and Firestore with new photoURL and potentially new displayName
+                // Update Auth profile
                 await updateProfile(user, { displayName, photoURL: finalPhotoURL });
-                console.log("Firebase Auth profile updated.");
+                console.log("Firebase Auth profile updated with new photoURL and displayName.");
 
+                // Update Firestore document
                 const userDocRef = doc(firestore, 'users', user.uid);
                 await setDoc(userDocRef, {
                     displayName,
@@ -189,13 +191,13 @@ export default function ProfilePage() {
                 }, { merge: true });
                 console.log("Firestore document updated with new photoURL and displayName.");
 
-                // Update local state to reflect changes
+                // Update local state to reflect all changes
                 setProfile(prev => prev ? { ...prev, displayName, photoURL: finalPhotoURL } : null);
-                setAvatarPreview(finalPhotoURL); // Set final URL for preview
+                setAvatarPreview(finalPhotoURL);
                 setNewAvatarFile(null); // Clear the selected file
             
-            // Scenario 2: Only the display name is changed
             } else if (displayName !== (profile?.displayName || user.displayName)) {
+                // Scenario 2: Only the display name is changed (no new avatar file)
                  await updateProfile(user, { displayName });
                  console.log("Firebase Auth profile updated with new displayName.");
 
@@ -217,9 +219,11 @@ export default function ProfilePage() {
             toast({ variant: 'destructive', title: 'Error updating profile', description: error.message || "An unexpected error occurred." });
         } finally {
             setIsSaving(false);
-            // Don't reset progress to null immediately, so user can see "100%"
-            // Maybe reset after a few seconds
-            setTimeout(() => setUploadProgress(null), 3000);
+            if (uploadProgress === 100) {
+                 setTimeout(() => setUploadProgress(null), 3000);
+            } else {
+                 setUploadProgress(0);
+            }
         }
     };
 
@@ -259,7 +263,7 @@ export default function ProfilePage() {
     }
     
     const getButtonText = () => {
-        if (isSaving && uploadProgress !== null) {
+        if (isSaving && uploadProgress !== null && uploadProgress < 100) {
             return `Uploading: ${uploadProgress}%`;
         }
         if (isSaving) {
@@ -299,7 +303,7 @@ export default function ProfilePage() {
                                 <p className="text-sm text-muted-foreground">{user?.email}</p>
                             </div>
 
-                            {uploadProgress !== null && (
+                            {uploadProgress !== null && uploadProgress > 0 && (
                                 <div className="w-full space-y-1 text-center">
                                     <Progress value={uploadProgress} className="h-2 bg-green-500/20 [&>div]:bg-green-500" />
                                     <p className="text-xs text-red-500">
@@ -378,3 +382,5 @@ export default function ProfilePage() {
         </div>
     );
 }
+
+    
